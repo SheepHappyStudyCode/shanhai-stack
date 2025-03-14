@@ -85,6 +85,8 @@ public class AuthServiceImpl implements AuthService {
         queryWrapper.eq(UserDO::getUsername, username);
         UserDO userDO = userMapper.selectOne(queryWrapper);
         ThrowUtils.throwIf(userDO == null, ErrorCode.PARAMS_ERROR, "用户不存在");
+        // 用户是否被封禁
+        ThrowUtils.throwIf(userDO.getStatus().equals(UserStatusEnum.BAN.getValue()), ErrorCode.OPERATION_ERROR, "用户被封禁，请联系管理员解封");
         // 密码是否正确
         boolean checkpw = BCrypt.checkpw(password, userDO.getPassword());
         ThrowUtils.throwIf(!checkpw, ErrorCode.PARAMS_ERROR, "密码不正确");

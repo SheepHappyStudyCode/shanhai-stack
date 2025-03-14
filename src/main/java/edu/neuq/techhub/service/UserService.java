@@ -30,4 +30,8 @@ import edu.neuq.techhub.domain.entity.UserDO;
 public interface UserService extends IService<UserDO> {
 
     Page<UserDO> pageQueryUsers(UserQueryDTO userQueryDTO);
+
+    Integer banUserById(Long id);
+
+    Integer unbanUserById(Long id);
 }

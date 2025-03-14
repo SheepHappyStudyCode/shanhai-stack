@@ -17,12 +17,14 @@
 
 package edu.neuq.techhub.service.impl;
 
+import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import edu.neuq.techhub.domain.dto.user.UserQueryDTO;
 import edu.neuq.techhub.domain.entity.UserDO;
+import edu.neuq.techhub.domain.enums.UserStatusEnum;
 import edu.neuq.techhub.exception.BusinessException;
 import edu.neuq.techhub.exception.ErrorCode;
 import edu.neuq.techhub.exception.ThrowUtils;
@@ -66,5 +68,41 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO>
         queryWrapper.eq(status != null, UserDO::getStatus, status);
 
         return this.page(userQueryDTO.toMpPageDefaultSortByCreateTimeDesc(), queryWrapper);
+    }
+
+    @Override
+    public Integer banUserById(Long id) {
+        // 校验用户是否存在
+        ThrowUtils.throwIf(id == null || id <= 0, ErrorCode.PARAMS_ERROR);
+        UserDO userDO = this.getById(id);
+        ThrowUtils.throwIf(userDO == null, ErrorCode.PARAMS_ERROR, "用户不存在");
+        // 校验用户是否已被封禁
+        ThrowUtils.throwIf(userDO.getStatus().equals(UserStatusEnum.BAN.getValue()), ErrorCode.OPERATION_ERROR, "用户已被封禁");
+        // 封禁用户
+        UserDO updateUser = new UserDO();
+        updateUser.setId(id);
+        updateUser.setStatus(UserStatusEnum.BAN.getValue());
+        boolean result = this.updateById(updateUser);
+        ThrowUtils.throwIf(!result, ErrorCode.SYSTEM_ERROR);
+        // 踢人下线
+        StpUtil.kickout(id);
+        return 0;
+    }
+
+    @Override
+    public Integer unbanUserById(Long id) {
+        // 校验用户是否存在
+        ThrowUtils.throwIf(id == null || id <= 0, ErrorCode.PARAMS_ERROR);
+        UserDO userDO = this.getById(id);
+        ThrowUtils.throwIf(userDO == null, ErrorCode.PARAMS_ERROR, "用户不存在");
+        // 校验用户是否状态正常
+        ThrowUtils.throwIf(userDO.getStatus().equals(UserStatusEnum.NORMAL.getValue()), ErrorCode.OPERATION_ERROR, "用户状态正常");
+        // 解封用户
+        UserDO updateUser = new UserDO();
+        updateUser.setId(id);
+        updateUser.setStatus(UserStatusEnum.NORMAL.getValue());
+        boolean result = this.updateById(updateUser);
+        ThrowUtils.throwIf(!result, ErrorCode.SYSTEM_ERROR);
+        return 0;
     }
 }

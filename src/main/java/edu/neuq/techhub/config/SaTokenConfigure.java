@@ -33,9 +33,9 @@ public class SaTokenConfigure implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         // 注册 Sa-Token 拦截器，校验规则为 StpUtil.checkLogin() 登录校验。
         registry.addInterceptor(new SaInterceptor(handle -> {
-                    SaRouter.match("/**", "/auth/**", r -> StpUtil.checkLogin());
-                    SaRouter.match("/manage/**", r -> StpUtil.checkRole("admin"));
-                }))
+            SaRouter.match("/**", "/auth/**", r -> StpUtil.checkLogin());
+            SaRouter.match("/manage/**", r -> StpUtil.checkRole("admin"));
+        }))
                 .addPathPatterns("/**")
                 .excludePathPatterns(
                         "/swagger-ui/**", // knife4j接口文档

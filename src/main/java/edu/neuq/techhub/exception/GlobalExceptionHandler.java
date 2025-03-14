@@ -42,7 +42,15 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NotLoginException.class)
     public BaseResponse<?> handlerNotLoginException(SaTokenException e) {
         log.error("NotLoginException", e);
-        return ResultUtils.error(ErrorCode.NOT_LOGIN_ERROR);
+        String message;
+        switch (e.getCode()) {
+            case 11015:
+                message = "账号被封禁，请联系管理员解封";
+                break;
+            default:
+                message = "未登录";
+        }
+        return ResultUtils.error(ErrorCode.NOT_LOGIN_ERROR, message);
     }
 
     @ExceptionHandler(NotRoleException.class)

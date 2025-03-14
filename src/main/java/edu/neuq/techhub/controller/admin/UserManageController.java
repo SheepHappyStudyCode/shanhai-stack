@@ -17,24 +17,16 @@
 
 package edu.neuq.techhub.controller.admin;
 
-import cn.dev33.satoken.annotation.SaIgnore;
-import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import edu.neuq.techhub.common.BaseResponse;
 import edu.neuq.techhub.common.ResultUtils;
 import edu.neuq.techhub.domain.dto.user.UserQueryDTO;
 import edu.neuq.techhub.domain.entity.UserDO;
-import edu.neuq.techhub.domain.vo.user.LoginUserVO;
-import edu.neuq.techhub.domain.vo.user.UserVO;
 import edu.neuq.techhub.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.beans.BeanUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/manage/users")
@@ -48,6 +40,20 @@ public class UserManageController {
     public BaseResponse<Page<UserDO>> pageQueryUsers(@ParameterObject UserQueryDTO userQueryDTO) {
         Page<UserDO> userDOPage = userService.pageQueryUsers(userQueryDTO);
         return ResultUtils.success(userDOPage);
+    }
+
+    @Operation(description = "封禁用户")
+    @PostMapping("{id}/ban")
+    public BaseResponse<Integer> banUser(@PathVariable Long id) {
+        Integer res = userService.banUserById(id);
+        return ResultUtils.success(res);
+    }
+
+    @Operation(description = "解封用户")
+    @PostMapping("{id}/unban")
+    public BaseResponse<Integer> unbanUser(@PathVariable Long id) {
+        Integer res = userService.unbanUserById(id);
+        return ResultUtils.success(res);
     }
 
 }
