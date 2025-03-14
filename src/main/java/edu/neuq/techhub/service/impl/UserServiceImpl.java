@@ -19,6 +19,7 @@ package edu.neuq.techhub.service.impl;
 
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -34,6 +35,8 @@ import edu.neuq.techhub.exception.ThrowUtils;
 import edu.neuq.techhub.mapper.UserMapper;
 import edu.neuq.techhub.service.UserService;
 import org.springframework.stereotype.Service;
+
+import java.util.Date;
 
 /**
 * @author panda
@@ -116,10 +119,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO>
         UserDO userDO = new UserDO();
         BeanUtil.copyProperties(userEditDTO, userDO);
         userDO.setId(id);
+        userDO.setEditTime(new Date());
         boolean result = this.updateById(userDO);
         ThrowUtils.throwIf(!result, ErrorCode.SYSTEM_ERROR);
         // 修改 session 的用户信息
         LoginUserVO loginUserVO = (LoginUserVO) StpUtil.getSession().get("user");
-        BeanUtil.copyProperties(userEditDTO, loginUserVO);
+        BeanUtil.copyProperties(userDO, loginUserVO, CopyOptions.create().setIgnoreNullValue(true).setIgnoreError(true));
     }
 }

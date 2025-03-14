@@ -19,9 +19,9 @@ package edu.neuq.techhub.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.util.Date;
 
@@ -29,9 +29,10 @@ import java.util.Date;
  * 用户表
  * @TableName sys_user
  */
+@EqualsAndHashCode(callSuper = true)
 @TableName(value = "sys_user")
 @Data
-public class UserDO {
+public class UserDO extends BaseDO {
 
     /**
      * ID
@@ -93,20 +94,4 @@ public class UserDO {
      * 注销时间戳
      */
     private Long deletionTime;
-
-    /**
-     * 创建时间
-     */
-    private Date createTime;
-
-    /**
-     * 修改时间
-     */
-    private Date updateTime;
-
-    /**
-     * 删除标识 0-正常 1-删除
-     */
-    @TableLogic
-    private Integer delFlag;
 }
