@@ -15,18 +15,21 @@
  * limitations under the License.
  */
 
-package edu.neuq.techhub.controller.user;
+package edu.neuq.techhub.controller.admin;
 
 import cn.dev33.satoken.annotation.SaIgnore;
 import cn.dev33.satoken.stp.StpUtil;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import edu.neuq.techhub.common.BaseResponse;
 import edu.neuq.techhub.common.ResultUtils;
+import edu.neuq.techhub.domain.dto.user.UserQueryDTO;
 import edu.neuq.techhub.domain.entity.UserDO;
 import edu.neuq.techhub.domain.vo.user.LoginUserVO;
 import edu.neuq.techhub.domain.vo.user.UserVO;
 import edu.neuq.techhub.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,27 +37,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/manage/users")
 @RequiredArgsConstructor
-public class UserController {
+public class UserManageController {
 
     private final UserService userService;
 
-    @Operation(description = "查询我的信息")
-    @GetMapping("/me")
-    public BaseResponse<LoginUserVO> getMyInfo() {
-        LoginUserVO loginUserVO = (LoginUserVO) StpUtil.getSession().get("user");
-        return ResultUtils.success(loginUserVO);
-    }
-
-    @Operation(description = "根据 id 查询用户")
-    @GetMapping("/{id}")
-    @SaIgnore
-    public BaseResponse<UserVO> getUserVOById(@PathVariable Long id) {
-        UserDO userDO = userService.getById(id);
-        UserVO userVO = new UserVO();
-        BeanUtils.copyProperties(userDO, userVO);
-        return ResultUtils.success(userVO);
+    @Operation(description = "分页查询用户")
+    @GetMapping
+    public BaseResponse<Page<UserDO>> pageQueryUsers(@ParameterObject UserQueryDTO userQueryDTO) {
+        Page<UserDO> userDOPage = userService.pageQueryUsers(userQueryDTO);
+        return ResultUtils.success(userDOPage);
     }
 
 }

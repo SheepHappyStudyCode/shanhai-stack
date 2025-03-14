@@ -18,6 +18,7 @@
 package edu.neuq.techhub.exception;
 
 import cn.dev33.satoken.exception.NotLoginException;
+import cn.dev33.satoken.exception.NotRoleException;
 import cn.dev33.satoken.exception.SaTokenException;
 import edu.neuq.techhub.common.BaseResponse;
 import edu.neuq.techhub.common.ResultUtils;
@@ -39,9 +40,15 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(NotLoginException.class)
-    public BaseResponse<?> handlerSaTokenException(SaTokenException e) {
+    public BaseResponse<?> handlerNotLoginException(SaTokenException e) {
         log.error("NotLoginException", e);
         return ResultUtils.error(ErrorCode.NOT_LOGIN_ERROR);
+    }
+
+    @ExceptionHandler(NotRoleException.class)
+    public BaseResponse<?> handlerNotRoleException(SaTokenException e) {
+        log.error("NotRoleException", e);
+        return ResultUtils.error(ErrorCode.NO_AUTH_ERROR);
     }
 
     @ExceptionHandler(RuntimeException.class)

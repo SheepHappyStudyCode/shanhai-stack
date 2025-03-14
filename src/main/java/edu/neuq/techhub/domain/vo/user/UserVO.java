@@ -15,19 +15,59 @@
  * limitations under the License.
  */
 
-package edu.neuq.techhub.service;
+package edu.neuq.techhub.domain.vo.user;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.IService;
-import edu.neuq.techhub.domain.dto.user.UserQueryDTO;
-import edu.neuq.techhub.domain.entity.UserDO;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
 
-/**
-* @author panda
-* @description 针对表【sys_user(用户表)】的数据库操作Service
-* @createDate 2025-03-13 20:50:50
-*/
-public interface UserService extends IService<UserDO> {
+import java.util.Date;
 
-    Page<UserDO> pageQueryUsers(UserQueryDTO userQueryDTO);
+@Data
+@Schema(description = "脱敏用户信息")
+public class UserVO {
+
+    /**
+     * ID
+     */
+    private Long id;
+
+    /**
+     * 用户名
+     */
+    private String username;
+
+    /**
+     * 头像
+     */
+    private String avatar;
+
+    /**
+     * 昵称
+     */
+    private String nickname;
+
+    /**
+     * 用户简介
+     */
+    private String profile;
+
+    /**
+     * 用户角色：user/admin
+     */
+    private String role;
+
+    /**
+     * 状态 0:正常 1:禁用
+     */
+    private Integer status;
+
+    /**
+     * 编辑时间
+     */
+    private Date editTime;
+
+    /**
+     * 创建时间
+     */
+    private Date createTime;
 }

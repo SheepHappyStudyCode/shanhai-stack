@@ -15,19 +15,48 @@
  * limitations under the License.
  */
 
-package edu.neuq.techhub.service;
+package edu.neuq.techhub.domain.dto.user;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.IService;
-import edu.neuq.techhub.domain.dto.user.UserQueryDTO;
-import edu.neuq.techhub.domain.entity.UserDO;
+import edu.neuq.techhub.common.PageRequest;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
-/**
-* @author panda
-* @description 针对表【sys_user(用户表)】的数据库操作Service
-* @createDate 2025-03-13 20:50:50
-*/
-public interface UserService extends IService<UserDO> {
+@EqualsAndHashCode(callSuper = true)
+@Data
+public class UserQueryDTO extends PageRequest {
 
-    Page<UserDO> pageQueryUsers(UserQueryDTO userQueryDTO);
+    /**
+     * 用户名
+     */
+    private String username;
+
+    /**
+     * 手机号
+     */
+    private String phone;
+
+    /**
+     * 邮箱
+     */
+    private String mail;
+
+    /**
+     * 昵称
+     */
+    private String nickname;
+
+    /**
+     * 用户简介
+     */
+    private String profile;
+
+    /**
+     * 用户角色：user/admin
+     */
+    private String role;
+
+    /**
+     * 状态 0:正常 1:禁用
+     */
+    private Integer status;
 }
