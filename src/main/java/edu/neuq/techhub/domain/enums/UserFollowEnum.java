@@ -15,23 +15,23 @@
  * limitations under the License.
  */
 
-package edu.neuq.techhub.service;
+package edu.neuq.techhub.domain.enums;
 
-import com.baomidou.mybatisplus.extension.service.IService;
-import edu.neuq.techhub.domain.entity.UserFollowDO;
+import lombok.Getter;
 
-/**
-* @author panda
-* @description 针对表【sys_user_follow(用户关注关系表)】的数据库操作Service
-* @createDate 2025-03-14 21:36:18
-*/
-public interface UserFollowService extends IService<UserFollowDO> {
+@Getter
+public enum UserFollowEnum {
 
-    /**
-     *
-     * @param follower_id 关注者 id
-     * @param following_id 被关注的人的 id
-     * @return 0-关注 1-取关
-     */
-    Integer followUserById(Long follower_id, Long following_id);
+    UNFOLLOW("取关", 0),
+    FOLLOW("关注", 1);
+
+    private final String text;
+
+    private final int value;
+
+    UserFollowEnum(String text, int value) {
+        this.text = text;
+        this.value = value;
+    }
+
 }
