@@ -20,47 +20,26 @@ package edu.neuq.techhub.controller.user;
 import cn.dev33.satoken.stp.StpUtil;
 import edu.neuq.techhub.common.BaseResponse;
 import edu.neuq.techhub.common.ResultUtils;
-import edu.neuq.techhub.domain.dto.user.UserLoginDTO;
-import edu.neuq.techhub.domain.dto.user.UserRegisterDTO;
 import edu.neuq.techhub.domain.vo.user.LoginUserVO;
-import edu.neuq.techhub.service.AuthService;
+import edu.neuq.techhub.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/users")
 @RequiredArgsConstructor
-public class AuthController {
+public class UserController {
 
-    private final AuthService authService;
+    private final UserService userService;
 
-    /**
-     * 用户注册
-     */
-    @PostMapping("/register")
-    public BaseResponse<LoginUserVO> userRegister(@RequestBody UserRegisterDTO userRegisterDto) {
-        LoginUserVO loginUserVO = authService.userRegister(userRegisterDto);
+    @Operation(description = "查询我的信息")
+    @PostMapping("/me")
+    public BaseResponse<LoginUserVO> getMyInfo() {
+        LoginUserVO loginUserVO = (LoginUserVO) StpUtil.getSession().get("user");
         return ResultUtils.success(loginUserVO);
-    }
-
-    /**
-     * 用户登录
-     */
-    @PostMapping("/login/password")
-    public BaseResponse<LoginUserVO> loginByPassword(@RequestBody UserLoginDTO userLoginDTO) {
-        LoginUserVO loginUserVO = authService.userLoginByPassword(userLoginDTO);
-        return ResultUtils.success(loginUserVO);
-    }
-
-    @Operation(description = "退出登录")
-    @PostMapping("/logout")
-    public BaseResponse<Integer> userLogout() {
-        StpUtil.logout();
-        return ResultUtils.success(0);
     }
 
 }

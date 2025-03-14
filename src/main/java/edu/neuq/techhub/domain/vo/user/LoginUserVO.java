@@ -17,11 +17,13 @@
 
 package edu.neuq.techhub.domain.vo.user;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.util.Date;
 
 @Data
+@Schema(description = "登录用户能够看到的用户信息")
 public class LoginUserVO {
 
     /**
