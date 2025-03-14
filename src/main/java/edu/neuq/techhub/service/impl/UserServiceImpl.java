@@ -18,13 +18,16 @@
 package edu.neuq.techhub.service.impl;
 
 import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import edu.neuq.techhub.domain.dto.user.UserEditDTO;
 import edu.neuq.techhub.domain.dto.user.UserQueryDTO;
 import edu.neuq.techhub.domain.entity.UserDO;
 import edu.neuq.techhub.domain.enums.UserStatusEnum;
+import edu.neuq.techhub.domain.vo.user.LoginUserVO;
 import edu.neuq.techhub.exception.BusinessException;
 import edu.neuq.techhub.exception.ErrorCode;
 import edu.neuq.techhub.exception.ThrowUtils;
@@ -104,5 +107,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO>
         boolean result = this.updateById(updateUser);
         ThrowUtils.throwIf(!result, ErrorCode.SYSTEM_ERROR);
         return 0;
+    }
+
+    @Override
+    public void editById(UserEditDTO userEditDTO, Long id) {
+        // 校验参数
+        ThrowUtils.throwIf(StrUtil.isBlank(userEditDTO.getNickname()), ErrorCode.PARAMS_ERROR, "用户昵称不能为空");
+        UserDO userDO = new UserDO();
+        BeanUtil.copyProperties(userEditDTO, userDO);
+        userDO.setId(id);
+        boolean result = this.updateById(userDO);
+        ThrowUtils.throwIf(!result, ErrorCode.SYSTEM_ERROR);
+        // 修改 session 的用户信息
+        LoginUserVO loginUserVO = (LoginUserVO) StpUtil.getSession().get("user");
+        BeanUtil.copyProperties(userEditDTO, loginUserVO);
     }
 }

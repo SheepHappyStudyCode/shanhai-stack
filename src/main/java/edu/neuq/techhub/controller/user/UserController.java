@@ -21,6 +21,7 @@ import cn.dev33.satoken.annotation.SaIgnore;
 import cn.dev33.satoken.stp.StpUtil;
 import edu.neuq.techhub.common.BaseResponse;
 import edu.neuq.techhub.common.ResultUtils;
+import edu.neuq.techhub.domain.dto.user.UserEditDTO;
 import edu.neuq.techhub.domain.entity.UserDO;
 import edu.neuq.techhub.domain.vo.user.LoginUserVO;
 import edu.neuq.techhub.domain.vo.user.UserVO;
@@ -28,10 +29,7 @@ import edu.neuq.techhub.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/users")
@@ -55,6 +53,14 @@ public class UserController {
         UserVO userVO = new UserVO();
         BeanUtils.copyProperties(userDO, userVO);
         return ResultUtils.success(userVO);
+    }
+
+    @Operation(description = "编辑个人信息")
+    @PatchMapping("/me")
+    public BaseResponse<Integer> editMe(@RequestBody UserEditDTO userEditDTO) {
+        LoginUserVO loginUserVO = (LoginUserVO) StpUtil.getSession().get("user");
+        userService.editById(userEditDTO, loginUserVO.getId());
+        return ResultUtils.success(0);
     }
 
 }

@@ -15,26 +15,26 @@
  * limitations under the License.
  */
 
-package edu.neuq.techhub.service;
+package edu.neuq.techhub.domain.dto.user;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.IService;
-import edu.neuq.techhub.domain.dto.user.UserEditDTO;
-import edu.neuq.techhub.domain.dto.user.UserQueryDTO;
-import edu.neuq.techhub.domain.entity.UserDO;
+import lombok.Data;
 
-/**
-* @author panda
-* @description 针对表【sys_user(用户表)】的数据库操作Service
-* @createDate 2025-03-13 20:50:50
-*/
-public interface UserService extends IService<UserDO> {
+@Data
+public class UserEditDTO {
 
-    Page<UserDO> pageQueryUsers(UserQueryDTO userQueryDTO);
+    /**
+     * 头像
+     */
+    private String avatar;
 
-    Integer banUserById(Long id);
+    /**
+     * 昵称
+     */
+    private String nickname;
 
-    Integer unbanUserById(Long id);
+    /**
+     * 用户简介
+     */
+    private String profile;
 
-    void editById(UserEditDTO userEditDTO, Long id);
 }
