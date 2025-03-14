@@ -26,6 +26,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import edu.neuq.techhub.domain.dto.user.UserLoginDTO;
 import edu.neuq.techhub.domain.dto.user.UserRegisterDTO;
 import edu.neuq.techhub.domain.entity.UserDO;
+import edu.neuq.techhub.domain.entity.UserStatsDO;
 import edu.neuq.techhub.domain.enums.UserRoleEnum;
 import edu.neuq.techhub.domain.enums.UserStatusEnum;
 import edu.neuq.techhub.domain.vo.user.LoginUserVO;
@@ -33,9 +34,11 @@ import edu.neuq.techhub.exception.BusinessException;
 import edu.neuq.techhub.exception.ErrorCode;
 import edu.neuq.techhub.exception.ThrowUtils;
 import edu.neuq.techhub.mapper.UserMapper;
+import edu.neuq.techhub.mapper.UserStatsMapper;
 import edu.neuq.techhub.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 
@@ -44,8 +47,10 @@ import java.util.Date;
 public class AuthServiceImpl implements AuthService {
 
     private final UserMapper userMapper;
+    private final UserStatsMapper userStatsMapper;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public LoginUserVO userRegister(UserRegisterDTO userRegisterDto) {
         // 校验参数
         validateUserRegisterDto(userRegisterDto);
@@ -64,6 +69,11 @@ public class AuthServiceImpl implements AuthService {
         userDO.setEditTime(new Date());
         userDO.setCreateTime(new Date());
         int insert = userMapper.insert(userDO);
+        ThrowUtils.throwIf(insert != 1, ErrorCode.SYSTEM_ERROR, "用户名重复");
+        // 构造用户统计数据
+        UserStatsDO userStatsDO = new UserStatsDO();
+        userStatsDO.setId(userDO.getId());
+        insert = userStatsMapper.insert(userStatsDO);
         ThrowUtils.throwIf(insert != 1, ErrorCode.SYSTEM_ERROR, "用户名重复");
         // 保存登录态
         StpUtil.login(userDO.getId());
