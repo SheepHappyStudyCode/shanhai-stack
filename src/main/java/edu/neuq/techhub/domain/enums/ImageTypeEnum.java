@@ -15,20 +15,38 @@
  * limitations under the License.
  */
 
-package edu.neuq.techhub;
+package edu.neuq.techhub.domain.enums;
 
-import org.dromara.x.file.storage.spring.EnableFileStorage;
-import org.mybatis.spring.annotation.MapperScan;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import lombok.Getter;
 
-@SpringBootApplication
-@MapperScan("edu.neuq.techhub.mapper")
-@EnableFileStorage
-public class TechhubApplication {
+@Getter
+public enum ImageTypeEnum {
 
-    public static void main(String[] args) {
-        SpringApplication.run(TechhubApplication.class, args);
+    AVATAR("头像", 0),
+    ARTICLE("文章", 1);
+
+    private final String text;
+
+    private final int value;
+
+    ImageTypeEnum(String text, int value) {
+        this.text = text;
+        this.value = value;
+    }
+
+    /**
+     * 根据 value 获取枚举
+     *
+     * @param value 枚举值的value
+     * @return 枚举值
+     */
+    public static ImageTypeEnum getEnumByValue(int value) {
+        for (ImageTypeEnum anEnum : ImageTypeEnum.values()) {
+            if (anEnum.getValue() == value) {
+                return anEnum;
+            }
+        }
+        return null;
     }
 
 }
