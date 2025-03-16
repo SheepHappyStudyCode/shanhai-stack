@@ -22,6 +22,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import edu.neuq.techhub.domain.dto.article.ArticleDraftUpdateDTO;
 import edu.neuq.techhub.domain.dto.article.ArticleQueryDTO;
 import edu.neuq.techhub.domain.entity.ArticleDO;
+import edu.neuq.techhub.domain.vo.article.ArticleDetailVO;
+import edu.neuq.techhub.domain.vo.user.LoginUserVO;
 
 /**
 * @author panda
@@ -41,4 +43,6 @@ public interface ArticleService extends IService<ArticleDO> {
     void passArticle(Long articleId, Long userId);
 
     void rejectArticle(Long articleId, String message, Long userId);
+
+    ArticleDetailVO getArticleDetailById(Long articleId, LoginUserVO loginUserVO);
 }

@@ -23,6 +23,7 @@ import edu.neuq.techhub.common.BaseResponse;
 import edu.neuq.techhub.common.ResultUtils;
 import edu.neuq.techhub.domain.dto.article.ArticleQueryDTO;
 import edu.neuq.techhub.domain.entity.ArticleDO;
+import edu.neuq.techhub.domain.vo.article.ArticleDetailVO;
 import edu.neuq.techhub.domain.vo.user.LoginUserVO;
 import edu.neuq.techhub.service.ArticleService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -60,6 +61,14 @@ public class ArticleManageController {
         LoginUserVO loginUserVO = (LoginUserVO) StpUtil.getSession().get("user");
         articleService.rejectArticle(id, message, loginUserVO.getId());
         return ResultUtils.success(0);
+    }
+
+    @Operation(summary = "根据 id 查询文章")
+    @GetMapping("/{id}")
+    public BaseResponse<ArticleDetailVO> listArticleByPage(@PathVariable Long id) {
+        LoginUserVO loginUserVO = (LoginUserVO) StpUtil.getSession().get("user");
+        ArticleDetailVO articleDetailVO = articleService.getArticleDetailById(id, loginUserVO);
+        return ResultUtils.success(articleDetailVO);
     }
 
 }

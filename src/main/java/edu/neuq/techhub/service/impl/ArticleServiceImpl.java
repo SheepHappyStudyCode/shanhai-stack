@@ -17,6 +17,7 @@
 
 package edu.neuq.techhub.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
@@ -28,12 +29,19 @@ import edu.neuq.techhub.domain.dto.article.ArticleQueryDTO;
 import edu.neuq.techhub.domain.entity.ArticleCategoryDO;
 import edu.neuq.techhub.domain.entity.ArticleContentDO;
 import edu.neuq.techhub.domain.entity.ArticleDO;
+import edu.neuq.techhub.domain.entity.UserDO;
 import edu.neuq.techhub.domain.enums.ArticleStatusEnum;
+import edu.neuq.techhub.domain.enums.UserRoleEnum;
+import edu.neuq.techhub.domain.vo.article.ArticleDetailVO;
+import edu.neuq.techhub.domain.vo.user.LoginUserVO;
+import edu.neuq.techhub.domain.vo.user.UserVO;
+import edu.neuq.techhub.exception.BusinessException;
 import edu.neuq.techhub.exception.ErrorCode;
 import edu.neuq.techhub.exception.ThrowUtils;
 import edu.neuq.techhub.mapper.ArticleCategoryMapper;
 import edu.neuq.techhub.mapper.ArticleContentMapper;
 import edu.neuq.techhub.mapper.ArticleMapper;
+import edu.neuq.techhub.mapper.UserMapper;
 import edu.neuq.techhub.service.ArticleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
@@ -42,6 +50,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 /**
 * @author panda
@@ -56,6 +67,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, ArticleDO>
 
     private final ArticleContentMapper articleContentMapper;
     private final ArticleCategoryMapper articleCategoryMapper;
+    private final UserMapper userMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -170,6 +182,87 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, ArticleDO>
         this.updateById(updateArticle);
     }
 
+    @Override
+    public ArticleDetailVO getArticleDetailById(Long articleId, LoginUserVO loginUserVO) {
+        // 参数校验
+        ThrowUtils.throwIf(articleId == null || articleId <= 0, ErrorCode.PARAMS_ERROR);
+
+        // 查询文章
+        ArticleDO articleDO = Optional.ofNullable(this.getById(articleId))
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_ERROR, "文章不存在"));
+
+        // 权限校验
+        validateArticleAccess(articleDO, loginUserVO);
+
+        // 构造返回对象
+        return buildArticleDetailVO(articleDO);
+    }
+
+    private void validateArticleAccess(ArticleDO articleDO, LoginUserVO loginUserVO) {
+        boolean isAuthor = loginUserVO != null && loginUserVO.getId().equals(articleDO.getUserId());
+        boolean isAdmin = loginUserVO != null && UserRoleEnum.ADMIN.getValue().equals(loginUserVO.getRole());
+
+        // 作者可以查看自己的所有文章
+        if (isAuthor) {
+            return;
+        }
+
+        // 管理员可以查看除草稿外的所有文章
+        if (isAdmin) {
+            ThrowUtils.throwIf(ArticleStatusEnum.DRAFT.getCode() == articleDO.getStatus(), ErrorCode.NO_AUTH_ERROR, "只有本人能查看文章草稿");
+            return;
+        }
+
+        // 其他用户只能查看审核通过的文章
+        ThrowUtils.throwIf(ArticleStatusEnum.REVIEW_PASSED.getCode() != articleDO.getStatus(), ErrorCode.NO_AUTH_ERROR, "只有审核通过的文章才能被访问");
+    }
+
+    private ArticleDetailVO buildArticleDetailVO(ArticleDO articleDO) {
+        ArticleDetailVO articleDetailVO = new ArticleDetailVO();
+        BeanUtil.copyProperties(articleDO, articleDetailVO);
+
+        // 并行查询相关数据
+        CompletableFuture<ArticleContentDO> contentFuture = CompletableFuture.supplyAsync(() -> articleContentMapper.selectById(articleDO.getId()));
+
+        CompletableFuture<ArticleCategoryDO> categoryFuture = CompletableFuture.supplyAsync(() -> {
+            if (articleDO.getCategoryId() != null) {
+                return articleCategoryMapper.selectById(articleDO.getCategoryId());
+            }
+            return null;
+        });
+
+        CompletableFuture<UserVO> userFuture = CompletableFuture.supplyAsync(() -> {
+            UserDO userDO = userMapper.selectById(articleDO.getUserId());
+            UserVO userVO = new UserVO();
+            BeanUtil.copyProperties(userDO, userVO);
+            return userVO;
+        });
+
+        try {
+            // 等待所有异步操作完成
+            CompletableFuture.allOf(contentFuture, categoryFuture, userFuture).join();
+
+            // 设置文章内容
+            ArticleContentDO content = contentFuture.get();
+            articleDetailVO.setContentHtml(content.getContentHtml());
+            articleDetailVO.setContentMd(content.getContentMd());
+
+            // 设置分类名称
+            articleDetailVO.setCategoryName(Optional.ofNullable(categoryFuture.get()).map(ArticleCategoryDO::getName).orElse(null));
+
+            // 设置用户信息
+            articleDetailVO.setUserVO(userFuture.get());
+
+            // 转换标签
+            articleDetailVO.setTagList(JSONUtil.toList(articleDO.getTags(), String.class));
+
+        } catch (InterruptedException | ExecutionException e) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "获取文章详情失败");
+        }
+
+        return articleDetailVO;
+    }
+
     private LambdaQueryWrapper<ArticleDO> buildQueryWrapper(ArticleQueryDTO articleQueryDTO) {
         LambdaQueryWrapper<ArticleDO> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         Long userId = articleQueryDTO.getUserId();
@@ -191,6 +284,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, ArticleDO>
         lambdaQueryWrapper.le(maxReadTime != null, ArticleDO::getReadTime, maxReadTime);
         lambdaQueryWrapper.eq(isOriginal != null, ArticleDO::getIsOriginal, isOriginal);
         lambdaQueryWrapper.eq(status != null, ArticleDO::getStatus, status);
+        // 排除草稿
+        lambdaQueryWrapper.ne(ArticleDO::getStatus, ArticleStatusEnum.DRAFT.getCode());
         return lambdaQueryWrapper;
 
     }
