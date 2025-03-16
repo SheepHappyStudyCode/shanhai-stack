@@ -20,8 +20,11 @@ package edu.neuq.techhub.service.impl;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import edu.neuq.techhub.domain.dto.article.ArticleDraftUpdateDTO;
+import edu.neuq.techhub.domain.dto.article.ArticleQueryDTO;
 import edu.neuq.techhub.domain.entity.ArticleCategoryDO;
 import edu.neuq.techhub.domain.entity.ArticleContentDO;
 import edu.neuq.techhub.domain.entity.ArticleDO;
@@ -123,6 +126,42 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, ArticleDO>
         articleContentDO.setContentMd(articleDraftUpdateDTO.getContentMd());
         int update = articleContentMapper.updateById(articleContentDO);
         ThrowUtils.throwIf(update != 1, ErrorCode.SYSTEM_ERROR);
+    }
+
+    @Override
+    public Page<ArticleDO> listArticleByPage(ArticleQueryDTO articleQueryDTO) {
+        ThrowUtils.throwIf(articleQueryDTO == null, ErrorCode.PARAMS_ERROR);
+        int current = articleQueryDTO.getCurrent();
+        int size = articleQueryDTO.getSize();
+        ThrowUtils.throwIf(current < 1 || size > 20, ErrorCode.PARAMS_ERROR, "分页参数不合法");
+        LambdaQueryWrapper<ArticleDO> queryWrapper = buildQueryWrapper(articleQueryDTO);
+        Page<ArticleDO> queryPage = articleQueryDTO.toMpPage();
+        return this.page(queryPage, queryWrapper);
+    }
+
+    private LambdaQueryWrapper<ArticleDO> buildQueryWrapper(ArticleQueryDTO articleQueryDTO) {
+        LambdaQueryWrapper<ArticleDO> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        Long userId = articleQueryDTO.getUserId();
+        String title = articleQueryDTO.getTitle();
+        String summary = articleQueryDTO.getSummary();
+        Long categoryId = articleQueryDTO.getCategoryId();
+        String tag = articleQueryDTO.getTag();
+        Integer minReadTime = articleQueryDTO.getMinReadTime();
+        Integer maxReadTime = articleQueryDTO.getMaxReadTime();
+        Integer isOriginal = articleQueryDTO.getIsOriginal();
+        Integer status = articleQueryDTO.getStatus();
+
+        lambdaQueryWrapper.eq(userId != null, ArticleDO::getUserId, userId);
+        lambdaQueryWrapper.like(StrUtil.isNotBlank(title), ArticleDO::getTitle, title);
+        lambdaQueryWrapper.like(StrUtil.isNotBlank(summary), ArticleDO::getSummary, summary);
+        lambdaQueryWrapper.eq(categoryId != null, ArticleDO::getCategoryId, categoryId);
+        lambdaQueryWrapper.like(StrUtil.isNotBlank(tag), ArticleDO::getTags, tag);
+        lambdaQueryWrapper.ge(minReadTime != null, ArticleDO::getReadTime, minReadTime);
+        lambdaQueryWrapper.le(maxReadTime != null, ArticleDO::getReadTime, maxReadTime);
+        lambdaQueryWrapper.eq(isOriginal != null, ArticleDO::getIsOriginal, isOriginal);
+        lambdaQueryWrapper.eq(status != null, ArticleDO::getStatus, status);
+        return lambdaQueryWrapper;
+
     }
 
     void validate(ArticleDraftUpdateDTO articleDraftUpdateDTO) {

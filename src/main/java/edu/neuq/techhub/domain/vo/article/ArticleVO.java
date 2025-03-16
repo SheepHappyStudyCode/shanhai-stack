@@ -15,26 +15,7 @@
  * limitations under the License.
  */
 
-package edu.neuq.techhub.service;
+package edu.neuq.techhub.domain.vo.article;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.IService;
-import edu.neuq.techhub.domain.dto.article.ArticleDraftUpdateDTO;
-import edu.neuq.techhub.domain.dto.article.ArticleQueryDTO;
-import edu.neuq.techhub.domain.entity.ArticleDO;
-
-/**
-* @author panda
-* @description 针对表【sys_article(文章表)】的数据库操作Service
-* @createDate 2025-03-16 12:34:59
-*/
-public interface ArticleService extends IService<ArticleDO> {
-
-    Long createDraft(Long userId);
-
-    void saveDraft(ArticleDraftUpdateDTO articleDraftUpdateDTO, Long userId);
-
-    void publishArticle(ArticleDraftUpdateDTO articleDraftUpdateDTO, Long userId);
-
-    Page<ArticleDO> listArticleByPage(ArticleQueryDTO articleQueryDTO);
+public class ArticleVO {
 }
