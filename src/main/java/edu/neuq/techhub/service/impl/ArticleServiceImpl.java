@@ -17,20 +17,28 @@
 
 package edu.neuq.techhub.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import edu.neuq.techhub.domain.dto.article.ArticleDraftUpdateDTO;
+import edu.neuq.techhub.domain.entity.ArticleCategoryDO;
 import edu.neuq.techhub.domain.entity.ArticleContentDO;
 import edu.neuq.techhub.domain.entity.ArticleDO;
 import edu.neuq.techhub.domain.enums.ArticleStatusEnum;
 import edu.neuq.techhub.exception.ErrorCode;
 import edu.neuq.techhub.exception.ThrowUtils;
+import edu.neuq.techhub.mapper.ArticleCategoryMapper;
 import edu.neuq.techhub.mapper.ArticleContentMapper;
 import edu.neuq.techhub.mapper.ArticleMapper;
 import edu.neuq.techhub.service.ArticleService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.List;
 
 /**
 * @author panda
@@ -44,6 +52,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, ArticleDO>
             ArticleService {
 
     private final ArticleContentMapper articleContentMapper;
+    private final ArticleCategoryMapper articleCategoryMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -60,5 +69,91 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, ArticleDO>
         int insert = articleContentMapper.insert(articleContentDO);
         ThrowUtils.throwIf(insert != 1, ErrorCode.SYSTEM_ERROR);
         return articleId;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void saveDraft(ArticleDraftUpdateDTO articleDraftUpdateDTO, Long userId) {
+        // 文章是否存在
+        Long articleId = articleDraftUpdateDTO.getId();
+        ThrowUtils.throwIf(articleId == null || articleId <= 0, ErrorCode.PARAMS_ERROR);
+        ArticleDO originArticle = this.getById(articleId);
+        ThrowUtils.throwIf(originArticle == null, ErrorCode.PARAMS_ERROR, "草稿不存在");
+        // 文章是否由本人创建
+        ThrowUtils.throwIf(!originArticle.getUserId().equals(userId), ErrorCode.NO_AUTH_ERROR);
+        // 保存文章
+        ArticleDO updateArticleDO = new ArticleDO();
+        BeanUtils.copyProperties(articleDraftUpdateDTO, updateArticleDO);
+        updateArticleDO.setEditTime(new Date());
+        updateArticleDO.setTags(JSONUtil.toJsonStr(articleDraftUpdateDTO.getTagList()));
+        boolean result = this.updateById(updateArticleDO);
+        ThrowUtils.throwIf(!result, ErrorCode.SYSTEM_ERROR);
+        ArticleContentDO articleContentDO = new ArticleContentDO();
+        articleContentDO.setId(articleId);
+        articleContentDO.setContentHtml(articleDraftUpdateDTO.getContentHtml());
+        articleContentDO.setContentMd(articleDraftUpdateDTO.getContentMd());
+        int update = articleContentMapper.updateById(articleContentDO);
+        ThrowUtils.throwIf(update != 1, ErrorCode.SYSTEM_ERROR);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void publishArticle(ArticleDraftUpdateDTO articleDraftUpdateDTO, Long userId) {
+        // 文章是否存在
+        Long articleId = articleDraftUpdateDTO.getId();
+        ThrowUtils.throwIf(articleId == null || articleId <= 0, ErrorCode.PARAMS_ERROR);
+        ArticleDO originArticle = this.getById(articleId);
+        ThrowUtils.throwIf(originArticle == null, ErrorCode.PARAMS_ERROR, "草稿不存在");
+        ThrowUtils.throwIf(!originArticle.getStatus().equals(ArticleStatusEnum.DRAFT.getCode()), ErrorCode.PARAMS_ERROR, "只有处在草稿状态的文章才能上传");
+        // 文章是否由本人创建
+        ThrowUtils.throwIf(!originArticle.getUserId().equals(userId), ErrorCode.NO_AUTH_ERROR);
+        // 校验文章参数是否合法
+        validate(articleDraftUpdateDTO);
+        // 保存文章
+        ArticleDO updateArticleDO = new ArticleDO();
+        BeanUtils.copyProperties(articleDraftUpdateDTO, updateArticleDO);
+        updateArticleDO.setEditTime(new Date());
+        updateArticleDO.setTags(JSONUtil.toJsonStr(articleDraftUpdateDTO.getTagList()));
+        updateArticleDO.setStatus(ArticleStatusEnum.PUBLISHED.getCode());
+        boolean result = this.updateById(updateArticleDO);
+        ThrowUtils.throwIf(!result, ErrorCode.SYSTEM_ERROR);
+        ArticleContentDO articleContentDO = new ArticleContentDO();
+        articleContentDO.setId(articleId);
+        articleContentDO.setContentHtml(articleDraftUpdateDTO.getContentHtml());
+        articleContentDO.setContentMd(articleDraftUpdateDTO.getContentMd());
+        int update = articleContentMapper.updateById(articleContentDO);
+        ThrowUtils.throwIf(update != 1, ErrorCode.SYSTEM_ERROR);
+    }
+
+    void validate(ArticleDraftUpdateDTO articleDraftUpdateDTO) {
+        String title = articleDraftUpdateDTO.getTitle();
+        String summary = articleDraftUpdateDTO.getSummary();
+        String contentHtml = articleDraftUpdateDTO.getContentHtml();
+        String contentMd = articleDraftUpdateDTO.getContentMd();
+        Long categoryId = articleDraftUpdateDTO.getCategoryId();
+        List<String> tagList = articleDraftUpdateDTO.getTagList();
+        Integer readTime = articleDraftUpdateDTO.getReadTime();
+        Integer isOriginal = articleDraftUpdateDTO.getIsOriginal();
+        String originalUrl = articleDraftUpdateDTO.getOriginalUrl();
+
+        // 非空校验
+        ThrowUtils.throwIf(StrUtil.isBlank(title), ErrorCode.PARAMS_ERROR, "标题不能为空");
+        ThrowUtils.throwIf(StrUtil.isBlank(summary), ErrorCode.PARAMS_ERROR, "文章简介不能为空");
+        ThrowUtils.throwIf(StrUtil.hasBlank(contentHtml, contentMd), ErrorCode.PARAMS_ERROR, "文章内容不能为空");
+        ThrowUtils.throwIf(categoryId == null, ErrorCode.PARAMS_ERROR, "文章分类不能为空");
+        ThrowUtils.throwIf(CollectionUtil.isEmpty(tagList), ErrorCode.PARAMS_ERROR, "文章标签不能为空");
+        ThrowUtils.throwIf(readTime == null, ErrorCode.PARAMS_ERROR, "文章阅读时间不能为空");
+        ThrowUtils.throwIf(isOriginal == null || isOriginal < 0 || isOriginal > 1, ErrorCode.PARAMS_ERROR, "文章是否原创不能为空");
+
+        // 单独参数校验
+        ThrowUtils.throwIf(title.length() > 150, ErrorCode.PARAMS_ERROR, "文章标题太长");
+        ThrowUtils.throwIf(summary.length() > 255, ErrorCode.PARAMS_ERROR, "文章简介太长");
+        ArticleCategoryDO articleCategoryDO = articleCategoryMapper.selectById(categoryId);
+        ThrowUtils.throwIf(articleCategoryDO == null, ErrorCode.PARAMS_ERROR, "文章分类不存在");
+        ThrowUtils.throwIf(readTime <= 0, ErrorCode.PARAMS_ERROR, "文章阅读时间只能是正整数");
+        if (isOriginal == 0) {
+            ThrowUtils.throwIf(StrUtil.isBlank(originalUrl), ErrorCode.PARAMS_ERROR, "文章转载地址不能为空");
+        }
+
     }
 }

@@ -20,14 +20,13 @@ package edu.neuq.techhub.controller.user;
 import cn.dev33.satoken.stp.StpUtil;
 import edu.neuq.techhub.common.BaseResponse;
 import edu.neuq.techhub.common.ResultUtils;
+import edu.neuq.techhub.domain.dto.article.ArticleDraftUpdateDTO;
 import edu.neuq.techhub.domain.vo.user.LoginUserVO;
 import edu.neuq.techhub.service.ArticleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/articles")
@@ -43,6 +42,22 @@ public class ArticleController {
         LoginUserVO loginUserVO = (LoginUserVO) StpUtil.getSession().get("user");
         Long id = articleService.createDraft(loginUserVO.getId());
         return ResultUtils.success(id);
+    }
+
+    @PatchMapping("/draft")
+    @Operation(summary = "保存文章草稿")
+    public BaseResponse<Integer> saveDraft(@RequestBody ArticleDraftUpdateDTO articleDraftUpdateDTO) {
+        LoginUserVO loginUserVO = (LoginUserVO) StpUtil.getSession().get("user");
+        articleService.saveDraft(articleDraftUpdateDTO, loginUserVO.getId());
+        return ResultUtils.success(0);
+    }
+
+    @PostMapping("/publish")
+    @Operation(summary = "发布文章")
+    public BaseResponse<Integer> publishArticle(@RequestBody ArticleDraftUpdateDTO articleDraftUpdateDTO) {
+        LoginUserVO loginUserVO = (LoginUserVO) StpUtil.getSession().get("user");
+        articleService.publishArticle(articleDraftUpdateDTO, loginUserVO.getId());
+        return ResultUtils.success(0);
     }
 
 }

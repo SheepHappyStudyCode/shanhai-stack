@@ -18,6 +18,7 @@
 package edu.neuq.techhub.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import edu.neuq.techhub.domain.dto.article.ArticleDraftUpdateDTO;
 import edu.neuq.techhub.domain.entity.ArticleDO;
 
 /**
@@ -28,4 +29,8 @@ import edu.neuq.techhub.domain.entity.ArticleDO;
 public interface ArticleService extends IService<ArticleDO> {
 
     Long createDraft(Long userId);
+
+    void saveDraft(ArticleDraftUpdateDTO articleDraftUpdateDTO, Long userId);
+
+    void publishArticle(ArticleDraftUpdateDTO articleDraftUpdateDTO, Long userId);
 }
