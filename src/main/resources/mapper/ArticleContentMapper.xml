@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="edu.neuq.techhub.mapper.ArticleContentMapper">
+
+    <resultMap id="BaseResultMap" type="edu.neuq.techhub.domain.entity.ArticleContentDO">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="contentHtml" column="content_html" jdbcType="VARCHAR"/>
+            <result property="contentMd" column="content_md" jdbcType="VARCHAR"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+            <result property="delFlag" column="del_flag" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,content_html,content_md,
+        create_time,update_time,del_flag
+    </sql>
+</mapper>
