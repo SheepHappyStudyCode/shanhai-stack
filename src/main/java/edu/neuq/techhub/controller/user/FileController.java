@@ -44,7 +44,6 @@ public class FileController {
 
     private final FileStorageService fileStorageService;
 
-
     @PostMapping("/upload-image")
     @Operation(summary = "上传图片")
     public BaseResponse<String> uploadImage(MultipartFile file, Integer type) {

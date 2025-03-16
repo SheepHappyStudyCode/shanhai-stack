@@ -40,14 +40,12 @@ public class UserController {
 
     private final UserService userService;
 
-
     @GetMapping("/me")
     @Operation(summary = "查询我的信息")
     public BaseResponse<LoginUserVO> getMyInfo() {
         LoginUserVO loginUserVO = (LoginUserVO) StpUtil.getSession().get("user");
         return ResultUtils.success(loginUserVO);
     }
-
 
     @GetMapping("/{id}")
     @SaIgnore
@@ -58,7 +56,6 @@ public class UserController {
         BeanUtils.copyProperties(userDO, userVO);
         return ResultUtils.success(userVO);
     }
-
 
     @PatchMapping("/me")
     @Operation(summary = "编辑个人信息")

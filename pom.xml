@@ -140,7 +140,6 @@
                 <version>${spring-boot.version}</version>
                 <configuration>
                     <mainClass>edu.neuq.techhub.TechhubApplication</mainClass>
-                    <skip>true</skip>
                 </configuration>
                 <executions>
                     <execution>
