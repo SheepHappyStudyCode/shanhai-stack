@@ -17,19 +17,19 @@
 
 package edu.neuq.techhub.controller.admin.article;
 
+import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import edu.neuq.techhub.common.BaseResponse;
 import edu.neuq.techhub.common.ResultUtils;
 import edu.neuq.techhub.domain.dto.article.ArticleQueryDTO;
 import edu.neuq.techhub.domain.entity.ArticleDO;
+import edu.neuq.techhub.domain.vo.user.LoginUserVO;
 import edu.neuq.techhub.service.ArticleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/manage/articles")
@@ -44,6 +44,22 @@ public class ArticleManageController {
     public BaseResponse<Page<ArticleDO>> listArticleByPage(@ParameterObject ArticleQueryDTO articleQueryDTO) {
         Page<ArticleDO> articlePageResult = articleService.listArticleByPage(articleQueryDTO);
         return ResultUtils.success(articlePageResult);
+    }
+
+    @Operation(summary = "文章审核通过")
+    @PostMapping("/{id}/pass")
+    public BaseResponse<Integer> passArticle(@PathVariable Long id) {
+        LoginUserVO loginUserVO = (LoginUserVO) StpUtil.getSession().get("user");
+        articleService.passArticle(id, loginUserVO.getId());
+        return ResultUtils.success(0);
+    }
+
+    @Operation(summary = "文章审核不通过")
+    @PostMapping("/{id}/reject")
+    public BaseResponse<Integer> rejectArticle(@PathVariable Long id, @RequestBody String message) {
+        LoginUserVO loginUserVO = (LoginUserVO) StpUtil.getSession().get("user");
+        articleService.rejectArticle(id, message, loginUserVO.getId());
+        return ResultUtils.success(0);
     }
 
 }

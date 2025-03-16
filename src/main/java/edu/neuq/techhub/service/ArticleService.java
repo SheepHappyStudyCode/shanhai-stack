@@ -37,4 +37,8 @@ public interface ArticleService extends IService<ArticleDO> {
     void publishArticle(ArticleDraftUpdateDTO articleDraftUpdateDTO, Long userId);
 
     Page<ArticleDO> listArticleByPage(ArticleQueryDTO articleQueryDTO);
+
+    void passArticle(Long articleId, Long userId);
+
+    void rejectArticle(Long articleId, String message, Long userId);
 }

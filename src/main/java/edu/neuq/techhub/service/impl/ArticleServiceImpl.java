@@ -133,10 +133,41 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, ArticleDO>
         ThrowUtils.throwIf(articleQueryDTO == null, ErrorCode.PARAMS_ERROR);
         int current = articleQueryDTO.getCurrent();
         int size = articleQueryDTO.getSize();
-        ThrowUtils.throwIf(current < 1 || size > 20, ErrorCode.PARAMS_ERROR, "分页参数不合法");
+        ThrowUtils.throwIf(current < 1 || size < 0 || size > 20, ErrorCode.PARAMS_ERROR, "分页参数不合法");
         LambdaQueryWrapper<ArticleDO> queryWrapper = buildQueryWrapper(articleQueryDTO);
         Page<ArticleDO> queryPage = articleQueryDTO.toMpPage();
         return this.page(queryPage, queryWrapper);
+    }
+
+    @Override
+    public void passArticle(Long articleId, Long userId) {
+        ThrowUtils.throwIf(articleId == null || articleId <= 0, ErrorCode.PARAMS_ERROR);
+        ArticleDO articleDO = this.getById(articleId);
+        ThrowUtils.throwIf(articleDO == null, ErrorCode.NOT_FOUND_ERROR, "文章不存在");
+        ThrowUtils.throwIf(articleDO.getStatus().equals(ArticleStatusEnum.DRAFT.getCode()), ErrorCode.NOT_FOUND_ERROR, "草稿状态的文章不允许审核");
+        ThrowUtils.throwIf(articleDO.getStatus().equals(ArticleStatusEnum.REVIEW_PASSED.getCode()), ErrorCode.NOT_FOUND_ERROR, "重复审核");
+        ArticleDO updateArticle = new ArticleDO();
+        updateArticle.setId(articleId);
+        updateArticle.setStatus(ArticleStatusEnum.REVIEW_PASSED.getCode());
+        updateArticle.setReviewerId(userId);
+        updateArticle.setReviewTime(new Date());
+        this.updateById(updateArticle);
+    }
+
+    @Override
+    public void rejectArticle(Long articleId, String message, Long userId) {
+        ThrowUtils.throwIf(articleId == null || articleId <= 0, ErrorCode.PARAMS_ERROR);
+        ArticleDO articleDO = this.getById(articleId);
+        ThrowUtils.throwIf(articleDO == null, ErrorCode.NOT_FOUND_ERROR, "文章不存在");
+        ThrowUtils.throwIf(articleDO.getStatus().equals(ArticleStatusEnum.DRAFT.getCode()), ErrorCode.NOT_FOUND_ERROR, "草稿状态的文章不允许审核");
+        ThrowUtils.throwIf(articleDO.getStatus().equals(ArticleStatusEnum.REVIEW_REJECTED.getCode()), ErrorCode.NOT_FOUND_ERROR, "重复审核");
+        ArticleDO updateArticle = new ArticleDO();
+        updateArticle.setId(articleId);
+        updateArticle.setStatus(ArticleStatusEnum.REVIEW_REJECTED.getCode());
+        updateArticle.setReviewerId(userId);
+        updateArticle.setReviewTime(new Date());
+        updateArticle.setReviewMessage(message);
+        this.updateById(updateArticle);
     }
 
     private LambdaQueryWrapper<ArticleDO> buildQueryWrapper(ArticleQueryDTO articleQueryDTO) {
