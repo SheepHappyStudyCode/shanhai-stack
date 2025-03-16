@@ -26,6 +26,7 @@ import edu.neuq.techhub.exception.ErrorCode;
 import edu.neuq.techhub.exception.ThrowUtils;
 import edu.neuq.techhub.service.ArticleCategoryService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,11 +35,12 @@ import java.util.List;
 @RestController
 @RequestMapping("/manage/article/categories")
 @RequiredArgsConstructor
+@Tag(name = "文章分类管理模块", description = "文章分类的增删改查")
 public class ArticleCategoryManageController {
 
     private final ArticleCategoryService articleCategoryService;
 
-    @Operation(description = "添加文章分类")
+    @Operation(summary = "添加文章分类")
     @PostMapping
     public BaseResponse<Integer> addArticleCategory(@RequestBody AddArticleCategoryDTO addArticleCategoryDTO) {
         String name = addArticleCategoryDTO.getName();
@@ -55,7 +57,7 @@ public class ArticleCategoryManageController {
         return ResultUtils.success(0);
     }
 
-    @Operation(description = "删除文章分类")
+    @Operation(summary = "删除文章分类")
     @DeleteMapping("/{id}")
     public BaseResponse<Integer> removeArticleCategoryById(@PathVariable Long id) {
         ThrowUtils.throwIf(id == null || id < 0, ErrorCode.PARAMS_ERROR);
@@ -65,7 +67,7 @@ public class ArticleCategoryManageController {
         return ResultUtils.success(0);
     }
 
-    @Operation(description = "查询所有文章分类")
+    @Operation(summary = "查询所有文章分类")
     @GetMapping
     public BaseResponse<List<ArticleCategoryDO>> getAllCategories() {
         List<ArticleCategoryDO> categoryDOList = articleCategoryService.lambdaQuery().orderByAsc(ArticleCategoryDO::getSort).list();

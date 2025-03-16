@@ -25,6 +25,7 @@ import edu.neuq.techhub.exception.ErrorCode;
 import edu.neuq.techhub.exception.ThrowUtils;
 import edu.neuq.techhub.utils.DateUtils;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dromara.x.file.storage.core.FileInfo;
 import org.dromara.x.file.storage.core.FileStorageService;
@@ -38,12 +39,14 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/files")
 @RequiredArgsConstructor
+@Tag(name = "文件模块", description = "用来上传文件")
 public class FileController {
 
     private final FileStorageService fileStorageService;
 
-    @Operation(description = "上传图片")
+
     @PostMapping("/upload-image")
+    @Operation(summary = "上传图片")
     public BaseResponse<String> uploadImage(MultipartFile file, Integer type) {
         ThrowUtils.throwIf(file == null || type == null, ErrorCode.PARAMS_ERROR);
         String typeStr = Optional.ofNullable(ImageTypeEnum.getEnumByValue(type)).map(ImageTypeEnum::getText).orElseThrow(() -> new BusinessException(ErrorCode.PARAMS_ERROR, "图片类型不合法"));

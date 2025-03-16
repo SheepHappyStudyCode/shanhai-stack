@@ -25,6 +25,7 @@ import edu.neuq.techhub.domain.dto.user.UserRegisterDTO;
 import edu.neuq.techhub.domain.vo.user.LoginUserVO;
 import edu.neuq.techhub.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -34,6 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
+@Tag(name = "权限模块", description = "包含用户注册、登录")
 public class AuthController {
 
     private final AuthService authService;
@@ -42,6 +44,7 @@ public class AuthController {
      * 用户注册
      */
     @PostMapping("/register")
+    @Operation(summary = "用户注册")
     public BaseResponse<LoginUserVO> userRegister(@RequestBody UserRegisterDTO userRegisterDto) {
         LoginUserVO loginUserVO = authService.userRegister(userRegisterDto);
         return ResultUtils.success(loginUserVO);
@@ -51,13 +54,14 @@ public class AuthController {
      * 用户登录
      */
     @PostMapping("/login/password")
+    @Operation(summary = "使用密码登录")
     public BaseResponse<LoginUserVO> loginByPassword(@RequestBody UserLoginDTO userLoginDTO) {
         LoginUserVO loginUserVO = authService.userLoginByPassword(userLoginDTO);
         return ResultUtils.success(loginUserVO);
     }
 
-    @Operation(description = "退出登录")
     @PostMapping("/logout")
+    @Operation(summary = "退出登录")
     public BaseResponse<Integer> userLogout() {
         StpUtil.logout();
         return ResultUtils.success(0);

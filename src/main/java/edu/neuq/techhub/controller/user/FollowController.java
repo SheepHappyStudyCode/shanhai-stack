@@ -23,6 +23,7 @@ import edu.neuq.techhub.common.ResultUtils;
 import edu.neuq.techhub.domain.vo.user.LoginUserVO;
 import edu.neuq.techhub.service.UserFollowService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,12 +33,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
+@Tag(name = "用户关注模块", description = "关注和取关用户")
 public class FollowController {
 
     private final UserFollowService userFollowService;
 
-    @Operation(description = "关注 / 取关某个用户")
     @PostMapping("/{id}/follow")
+    @Operation(summary = "关注 / 取关某个用户")
     public BaseResponse<Integer> followUserById(@PathVariable Long id) {
         LoginUserVO loginUserVO = (LoginUserVO) StpUtil.getSession().get("user");
         Integer result = userFollowService.followUserById(loginUserVO.getId(), id);

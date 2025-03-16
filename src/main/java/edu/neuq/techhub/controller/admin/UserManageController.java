@@ -24,6 +24,7 @@ import edu.neuq.techhub.domain.dto.user.UserQueryDTO;
 import edu.neuq.techhub.domain.entity.UserDO;
 import edu.neuq.techhub.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.web.bind.annotation.*;
@@ -31,25 +32,26 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/manage/users")
 @RequiredArgsConstructor
+@Tag(name = "用户管理模块", description = "用户的增删改查")
 public class UserManageController {
 
     private final UserService userService;
 
-    @Operation(description = "分页查询用户")
+    @Operation(summary = "分页查询用户")
     @GetMapping
     public BaseResponse<Page<UserDO>> pageQueryUsers(@ParameterObject UserQueryDTO userQueryDTO) {
         Page<UserDO> userDOPage = userService.pageQueryUsers(userQueryDTO);
         return ResultUtils.success(userDOPage);
     }
 
-    @Operation(description = "封禁用户")
+    @Operation(summary = "封禁用户")
     @PostMapping("{id}/ban")
     public BaseResponse<Integer> banUser(@PathVariable Long id) {
         Integer res = userService.banUserById(id);
         return ResultUtils.success(res);
     }
 
-    @Operation(description = "解封用户")
+    @Operation(summary = "解封用户")
     @PostMapping("{id}/unban")
     public BaseResponse<Integer> unbanUser(@PathVariable Long id) {
         Integer res = userService.unbanUserById(id);

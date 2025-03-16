@@ -27,6 +27,7 @@ import edu.neuq.techhub.domain.vo.user.LoginUserVO;
 import edu.neuq.techhub.domain.vo.user.UserVO;
 import edu.neuq.techhub.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
@@ -34,20 +35,23 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
+@Tag(name = "用户模块", description = "用户的查询、编辑等")
 public class UserController {
 
     private final UserService userService;
 
-    @Operation(description = "查询我的信息")
+
     @GetMapping("/me")
+    @Operation(summary = "查询我的信息")
     public BaseResponse<LoginUserVO> getMyInfo() {
         LoginUserVO loginUserVO = (LoginUserVO) StpUtil.getSession().get("user");
         return ResultUtils.success(loginUserVO);
     }
 
-    @Operation(description = "根据 id 查询用户")
+
     @GetMapping("/{id}")
     @SaIgnore
+    @Operation(summary = "根据 id 查询用户")
     public BaseResponse<UserVO> getUserVOById(@PathVariable Long id) {
         UserDO userDO = userService.getById(id);
         UserVO userVO = new UserVO();
@@ -55,8 +59,9 @@ public class UserController {
         return ResultUtils.success(userVO);
     }
 
-    @Operation(description = "编辑个人信息")
+
     @PatchMapping("/me")
+    @Operation(summary = "编辑个人信息")
     public BaseResponse<Integer> editMe(@RequestBody UserEditDTO userEditDTO) {
         LoginUserVO loginUserVO = (LoginUserVO) StpUtil.getSession().get("user");
         userService.editById(userEditDTO, loginUserVO.getId());
