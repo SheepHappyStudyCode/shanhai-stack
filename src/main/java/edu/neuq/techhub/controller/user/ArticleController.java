@@ -93,4 +93,12 @@ public class ArticleController {
         return ResultUtils.success(result);
     }
 
+    @Operation(summary = "删除我的文章")
+    @DeleteMapping("/{id}")
+    public BaseResponse<Integer> removeMyArticleById(@PathVariable Long id) {
+        LoginUserVO loginUserVO = (LoginUserVO) StpUtil.getSession().get("user");
+        articleService.removeMyArticleById(id, loginUserVO.getId());
+        return ResultUtils.success(0);
+    }
+
 }

@@ -52,4 +52,6 @@ public interface ArticleService extends IService<ArticleDO> {
     CursorPageResult<ArticleVO, ArticleSearchDTO.ArticleCursor> listArticleByCursorPage(ArticleSearchDTO articleSearchDTO);
 
     Page<ArticleVO> listMyArticleByPage(ArticleQueryDTO articleQueryDTO, LoginUserVO loginUserVO);
+
+    void removeMyArticleById(Long articleId, Long userId);
 }

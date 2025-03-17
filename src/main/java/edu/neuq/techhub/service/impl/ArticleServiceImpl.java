@@ -252,6 +252,19 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, ArticleDO>
         return articleVOPage;
     }
 
+    @Override
+    public void removeMyArticleById(Long articleId, Long userId) {
+        // 校验文章是否存在
+        ThrowUtils.throwIf(articleId == null || articleId <= 0, ErrorCode.PARAMS_ERROR);
+        ArticleDO articleDO = this.getById(articleId);
+        ThrowUtils.throwIf(articleDO == null, ErrorCode.NOT_FOUND_ERROR);
+        // 校验文章作者是否是自己
+        ThrowUtils.throwIf(!articleDO.getUserId().equals(userId), ErrorCode.NO_AUTH_ERROR);
+        // 删除文章
+        boolean res = this.removeById(articleId);
+        ThrowUtils.throwIf(!res, ErrorCode.SYSTEM_ERROR);
+    }
+
     /**
      * 填充文章VO列表中的分类名称和用户信息
      * @param articleVOList 需要填充信息的文章VO列表
