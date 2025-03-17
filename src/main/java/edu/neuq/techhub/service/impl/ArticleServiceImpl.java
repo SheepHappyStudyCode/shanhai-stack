@@ -22,17 +22,22 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import edu.neuq.techhub.common.CursorPageResult;
 import edu.neuq.techhub.domain.dto.article.ArticleDraftUpdateDTO;
 import edu.neuq.techhub.domain.dto.article.ArticleQueryDTO;
+import edu.neuq.techhub.domain.dto.article.ArticleSearchDTO;
 import edu.neuq.techhub.domain.entity.ArticleCategoryDO;
 import edu.neuq.techhub.domain.entity.ArticleContentDO;
 import edu.neuq.techhub.domain.entity.ArticleDO;
 import edu.neuq.techhub.domain.entity.UserDO;
-import edu.neuq.techhub.domain.enums.ArticleStatusEnum;
-import edu.neuq.techhub.domain.enums.UserRoleEnum;
+import edu.neuq.techhub.domain.enums.article.ArticleSortFieldEnum;
+import edu.neuq.techhub.domain.enums.article.ArticleStatusEnum;
+import edu.neuq.techhub.domain.enums.user.UserRoleEnum;
 import edu.neuq.techhub.domain.vo.article.ArticleDetailVO;
+import edu.neuq.techhub.domain.vo.article.ArticleVO;
 import edu.neuq.techhub.domain.vo.user.LoginUserVO;
 import edu.neuq.techhub.domain.vo.user.UserVO;
 import edu.neuq.techhub.exception.BusinessException;
@@ -48,17 +53,16 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 /**
-* @author panda
-* @description 针对表【sys_article(文章表)】的数据库操作Service实现
-* @createDate 2025-03-16 12:34:59
-*/
+ * @author panda
+ * @description 针对表【sys_article(文章表)】的数据库操作Service实现
+ * @createDate 2025-03-16 12:34:59
+ */
 @Service
 @RequiredArgsConstructor
 public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, ArticleDO>
@@ -130,6 +134,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, ArticleDO>
         updateArticleDO.setEditTime(new Date());
         updateArticleDO.setTags(JSONUtil.toJsonStr(articleDraftUpdateDTO.getTagList()));
         updateArticleDO.setStatus(ArticleStatusEnum.PUBLISHED.getCode());
+        updateArticleDO.setPublishTime(new Date());
         boolean result = this.updateById(updateArticleDO);
         ThrowUtils.throwIf(!result, ErrorCode.SYSTEM_ERROR);
         ArticleContentDO articleContentDO = new ArticleContentDO();
@@ -196,6 +201,158 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, ArticleDO>
 
         // 构造返回对象
         return buildArticleDetailVO(articleDO);
+    }
+
+    @Override
+    public CursorPageResult<ArticleVO, ArticleSearchDTO.ArticleCursor> listArticleByCursorPage(ArticleSearchDTO articleSearchDTO) {
+        // 参数校验
+        ThrowUtils.throwIf(articleSearchDTO == null, ErrorCode.PARAMS_ERROR);
+        int size = articleSearchDTO.getSize();
+        ThrowUtils.throwIf(size < 0 || size > 20, ErrorCode.PARAMS_ERROR, "分页参数不合法");
+        String sortField = articleSearchDTO.getSortField();
+        ArticleSortFieldEnum sortFiledEnum = ArticleSortFieldEnum.getByValue(sortField);
+        ThrowUtils.throwIf(sortFiledEnum == null, ErrorCode.PARAMS_ERROR, "暂不支持这种排序方式");
+
+        // 构造查询条件
+        QueryWrapper<ArticleDO> queryWrapper = buildQueryWrapper(articleSearchDTO);
+
+        // 执行查询
+        List<ArticleDO> articleList = this.list(queryWrapper);
+
+        // 判断是否有下一页
+        boolean hasMore = articleList.size() > size;
+        if (hasMore) {
+            // 移除多查询的一条记录
+            articleList.remove(size);
+        }
+
+        // 转换为VO对象
+        List<ArticleVO> articleVOList = articleList.parallelStream()
+                .map(ArticleVO::obj2vo)
+                .collect(Collectors.toList());
+        fillArticleVOList(articleVOList);
+        // 构造下一页的游标
+        ArticleSearchDTO.ArticleCursor nextCursor = null;
+        if (hasMore && !articleVOList.isEmpty()) {
+            ArticleVO lastArticle = articleVOList.get(articleVOList.size() - 1);
+            nextCursor = buildNextCursor(lastArticle, sortFiledEnum);
+        }
+
+        // 返回结果
+        return CursorPageResult.of(articleVOList, hasMore, nextCursor);
+    }
+
+    /**
+     * 填充文章VO列表中的分类名称和用户信息
+     * @param articleVOList 需要填充信息的文章VO列表
+     */
+    public void fillArticleVOList(List<ArticleVO> articleVOList) {
+        if (articleVOList == null || articleVOList.isEmpty()) {
+            return;
+        }
+
+        // 收集需要查询的分类ID和用户ID
+        Set<Long> categoryIds = articleVOList.stream()
+                .map(ArticleVO::getCategoryId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        Set<Long> userIds = articleVOList.stream()
+                .map(ArticleVO::getUserId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        // 查询数据并构建ID到对象的映射
+        Map<Long, UserVO> userVOMap = userMapper.selectByIds(userIds).stream()
+                .map(UserVO::obj2vo)
+                .collect(Collectors.toMap(UserVO::getId, userVO -> userVO, (v1, v2) -> v1));
+
+        Map<Long, ArticleCategoryDO> categoryMap = articleCategoryMapper.selectByIds(categoryIds).stream()
+                .collect(Collectors.toMap(ArticleCategoryDO::getId, category -> category, (v1, v2) -> v1));
+
+        // 填充每篇文章的分类名称和用户信息
+        for (ArticleVO articleVO : articleVOList) {
+            // 使用 Optional 处理分类信息
+            Optional.ofNullable(articleVO.getCategoryId())
+                    .map(categoryMap::get)
+                    .map(ArticleCategoryDO::getName)
+                    .ifPresent(articleVO::setCategoryName);
+
+            // 使用 Optional 处理用户信息
+            Optional.ofNullable(articleVO.getUserId())
+                    .map(userVOMap::get)
+                    .ifPresent(articleVO::setUserVO);
+        }
+    }
+
+    private ArticleSearchDTO.ArticleCursor buildNextCursor(ArticleVO article, ArticleSortFieldEnum sortFiledEnum) {
+        ArticleSearchDTO.ArticleCursor cursor = new ArticleSearchDTO.ArticleCursor();
+        cursor.setId(article.getId());
+
+        // 根据排序字段设置对应值
+        switch (sortFiledEnum) {
+            case PUBLISH_TIME -> cursor.setPublishTime(article.getPublishTime());
+            case LIKE_COUNT -> cursor.setLikeCount(article.getLikeCount());
+            case COLLECT_COUNT -> cursor.setCollectCount(article.getCollectCount());
+        }
+
+        return cursor;
+    }
+
+    private QueryWrapper<ArticleDO> buildQueryWrapper(ArticleSearchDTO articleSearchDTO) {
+        // 构造基础查询条件
+        QueryWrapper<ArticleDO> queryWrapper = new QueryWrapper<>();
+        String searchText = articleSearchDTO.getSearchText();
+        Long userId = articleSearchDTO.getUserId();
+        Long categoryId = articleSearchDTO.getCategoryId();
+        String sortField = articleSearchDTO.getSortField();
+        boolean asc = articleSearchDTO.isAsc();
+        int size = articleSearchDTO.getSize();
+        ArticleSortFieldEnum sortFiledEnum = ArticleSortFieldEnum.getByValue(sortField);
+
+        // 构造过滤条件
+        queryWrapper.and(StrUtil.isNotBlank(searchText), w -> w.like("title", searchText).or().like("summary", searchText));
+        queryWrapper.eq(userId != null, "user_id", userId);
+        queryWrapper.eq(categoryId != null, "category_id", categoryId);
+        queryWrapper.eq("status", ArticleStatusEnum.REVIEW_PASSED.getCode());
+
+        // 构造游标分页条件
+        if (!articleSearchDTO.isFirstQuery()) {
+            ArticleSearchDTO.ArticleCursor cursor = articleSearchDTO.getCursor();
+            Long cursorId = cursor.getId();
+
+            // 获取排序字段的值
+            Object sortValue = getSortValue(cursor, sortFiledEnum);
+
+            if (asc) {
+                // 升序：(sortField > sortValue) OR (sortField = sortValue AND id > cursorId)
+                queryWrapper.and(w -> w
+                        .gt(sortField, sortValue)
+                        .or(o -> o.eq(sortField, sortValue).gt("id", cursorId)));
+            } else {
+                // 降序：(sortField < sortValue) OR (sortField = sortValue AND id < cursorId)
+                queryWrapper.and(w -> w
+                        .lt(sortField, sortValue)
+                        .or(o -> o.eq(sortField, sortValue).lt("id", cursorId)));
+            }
+        }
+
+        // 添加排序
+        queryWrapper.orderBy(true, asc, sortField);
+        queryWrapper.orderBy(true, asc, "id"); // 确保结果稳定性
+
+        // 限制返回数量
+        queryWrapper.last(String.format("limit %d", size + 1));
+
+        return queryWrapper;
+    }
+
+    private Object getSortValue(ArticleSearchDTO.ArticleCursor cursor, ArticleSortFieldEnum sortFiledEnum) {
+        return switch (sortFiledEnum) {
+            case PUBLISH_TIME -> cursor.getPublishTime();
+            case LIKE_COUNT -> cursor.getLikeCount();
+            case COLLECT_COUNT -> cursor.getCollectCount();
+        };
     }
 
     private void validateArticleAccess(ArticleDO articleDO, LoginUserVO loginUserVO) {

@@ -19,10 +19,13 @@ package edu.neuq.techhub.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import edu.neuq.techhub.common.CursorPageResult;
 import edu.neuq.techhub.domain.dto.article.ArticleDraftUpdateDTO;
 import edu.neuq.techhub.domain.dto.article.ArticleQueryDTO;
+import edu.neuq.techhub.domain.dto.article.ArticleSearchDTO;
 import edu.neuq.techhub.domain.entity.ArticleDO;
 import edu.neuq.techhub.domain.vo.article.ArticleDetailVO;
+import edu.neuq.techhub.domain.vo.article.ArticleVO;
 import edu.neuq.techhub.domain.vo.user.LoginUserVO;
 
 /**
@@ -45,4 +48,6 @@ public interface ArticleService extends IService<ArticleDO> {
     void rejectArticle(Long articleId, String message, Long userId);
 
     ArticleDetailVO getArticleDetailById(Long articleId, LoginUserVO loginUserVO);
+
+    CursorPageResult<ArticleVO, ArticleSearchDTO.ArticleCursor> listArticleByCursorPage(ArticleSearchDTO articleSearchDTO);
 }

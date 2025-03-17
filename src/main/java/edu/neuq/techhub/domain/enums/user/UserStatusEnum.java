@@ -15,21 +15,21 @@
  * limitations under the License.
  */
 
-package edu.neuq.techhub.domain.enums;
+package edu.neuq.techhub.domain.enums.user;
 
 import lombok.Getter;
 
 @Getter
-public enum UserFollowEnum {
+public enum UserStatusEnum {
 
-    UNFOLLOW("取关", 0),
-    FOLLOW("关注", 1);
+    NORMAL("正常", 0),
+    BAN("封禁", 1);
 
     private final String text;
 
     private final int value;
 
-    UserFollowEnum(String text, int value) {
+    UserStatusEnum(String text, int value) {
         this.text = text;
         this.value = value;
     }

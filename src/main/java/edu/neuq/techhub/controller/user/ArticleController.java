@@ -17,11 +17,15 @@
 
 package edu.neuq.techhub.controller.user;
 
+import cn.dev33.satoken.annotation.SaIgnore;
 import cn.dev33.satoken.stp.StpUtil;
 import edu.neuq.techhub.common.BaseResponse;
+import edu.neuq.techhub.common.CursorPageResult;
 import edu.neuq.techhub.common.ResultUtils;
 import edu.neuq.techhub.domain.dto.article.ArticleDraftUpdateDTO;
+import edu.neuq.techhub.domain.dto.article.ArticleSearchDTO;
 import edu.neuq.techhub.domain.vo.article.ArticleDetailVO;
+import edu.neuq.techhub.domain.vo.article.ArticleVO;
 import edu.neuq.techhub.domain.vo.user.LoginUserVO;
 import edu.neuq.techhub.service.ArticleService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -63,10 +67,18 @@ public class ArticleController {
 
     @Operation(summary = "根据 id 查询文章")
     @GetMapping("/{id}")
-    public BaseResponse<ArticleDetailVO> listArticleByPage(@PathVariable Long id) {
+    public BaseResponse<ArticleDetailVO> getArticleDetailById(@PathVariable Long id) {
         LoginUserVO loginUserVO = (LoginUserVO) StpUtil.getSession().get("user");
         ArticleDetailVO articleDetailVO = articleService.getArticleDetailById(id, loginUserVO);
         return ResultUtils.success(articleDetailVO);
+    }
+
+    @Operation(summary = "通过游标分页查询文章")
+    @PostMapping("/search")
+    @SaIgnore
+    public BaseResponse<CursorPageResult<ArticleVO, ArticleSearchDTO.ArticleCursor>> listArticleByCursorPage(@RequestBody ArticleSearchDTO articleSearchDTO) {
+        CursorPageResult<ArticleVO, ArticleSearchDTO.ArticleCursor> result = articleService.listArticleByCursorPage(articleSearchDTO);
+        return ResultUtils.success(result);
     }
 
 }

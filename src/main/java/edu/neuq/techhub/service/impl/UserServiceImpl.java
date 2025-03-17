@@ -27,7 +27,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import edu.neuq.techhub.domain.dto.user.UserEditDTO;
 import edu.neuq.techhub.domain.dto.user.UserQueryDTO;
 import edu.neuq.techhub.domain.entity.UserDO;
-import edu.neuq.techhub.domain.enums.UserStatusEnum;
+import edu.neuq.techhub.domain.enums.user.UserStatusEnum;
 import edu.neuq.techhub.domain.vo.user.LoginUserVO;
 import edu.neuq.techhub.exception.BusinessException;
 import edu.neuq.techhub.exception.ErrorCode;

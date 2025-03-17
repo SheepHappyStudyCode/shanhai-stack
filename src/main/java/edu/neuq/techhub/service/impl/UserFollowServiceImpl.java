@@ -23,7 +23,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import edu.neuq.techhub.domain.entity.UserDO;
 import edu.neuq.techhub.domain.entity.UserFollowDO;
 import edu.neuq.techhub.domain.entity.UserStatsDO;
-import edu.neuq.techhub.domain.enums.UserFollowEnum;
+import edu.neuq.techhub.domain.enums.user.UserFollowEnum;
 import edu.neuq.techhub.exception.ErrorCode;
 import edu.neuq.techhub.exception.ThrowUtils;
 import edu.neuq.techhub.mapper.UserFollowMapper;

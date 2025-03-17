@@ -17,8 +17,10 @@
 
 package edu.neuq.techhub.domain.vo.user;
 
+import edu.neuq.techhub.domain.entity.UserDO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import org.springframework.beans.BeanUtils;
 
 import java.util.Date;
 
@@ -70,4 +72,10 @@ public class UserVO {
      * 创建时间
      */
     private Date createTime;
+
+    public static UserVO obj2vo(UserDO userDO) {
+        UserVO vo = new UserVO();
+        BeanUtils.copyProperties(userDO, vo);
+        return vo;
+    }
 }

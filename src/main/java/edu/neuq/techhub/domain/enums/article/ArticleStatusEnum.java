@@ -15,23 +15,33 @@
  * limitations under the License.
  */
 
-package edu.neuq.techhub.domain.enums;
+package edu.neuq.techhub.domain.enums.article;
 
 import lombok.Getter;
 
 @Getter
-public enum UserStatusEnum {
+public enum ArticleStatusEnum {
 
-    NORMAL("正常", 0),
-    BAN("封禁", 1);
+    DRAFT(0, "草稿"),
+    PUBLISHED(1, "已发布"),
+    REVIEW_PASSED(2, "审核通过"),
+    REVIEW_REJECTED(3, "审核不通过"),
+    OFFLINE(4, "已下架");
 
-    private final String text;
+    private final int code;
+    private final String desc;
 
-    private final int value;
-
-    UserStatusEnum(String text, int value) {
-        this.text = text;
-        this.value = value;
+    ArticleStatusEnum(int code, String desc) {
+        this.code = code;
+        this.desc = desc;
     }
 
+    public static ArticleStatusEnum getByCode(int code) {
+        for (ArticleStatusEnum status : values()) {
+            if (status.getCode() == code) {
+                return status;
+            }
+        }
+        return null;
+    }
 }

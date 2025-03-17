@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package edu.neuq.techhub.domain.enums;
+package edu.neuq.techhub.domain.enums.user;
 
 import cn.hutool.core.util.ObjUtil;
 import lombok.Getter;
