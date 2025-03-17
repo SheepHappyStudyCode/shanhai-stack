@@ -147,12 +147,12 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, ArticleDO>
     }
 
     @Override
-    public Page<ArticleDO> listArticleByPage(ArticleQueryDTO articleQueryDTO) {
+    public Page<ArticleDO> listArticleByPage(ArticleQueryDTO articleQueryDTO, LoginUserVO loginUserVO) {
         ThrowUtils.throwIf(articleQueryDTO == null, ErrorCode.PARAMS_ERROR);
         int current = articleQueryDTO.getCurrent();
         int size = articleQueryDTO.getSize();
         ThrowUtils.throwIf(current < 1 || size < 0 || size > 20, ErrorCode.PARAMS_ERROR, "分页参数不合法");
-        LambdaQueryWrapper<ArticleDO> queryWrapper = buildQueryWrapper(articleQueryDTO);
+        LambdaQueryWrapper<ArticleDO> queryWrapper = buildQueryWrapper(articleQueryDTO, loginUserVO);
         Page<ArticleDO> queryPage = articleQueryDTO.toMpPage();
         return this.page(queryPage, queryWrapper);
     }
@@ -241,6 +241,15 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, ArticleDO>
 
         // 返回结果
         return CursorPageResult.of(articleVOList, hasMore, nextCursor);
+    }
+
+    @Override
+    public Page<ArticleVO> listMyArticleByPage(ArticleQueryDTO articleQueryDTO, LoginUserVO loginUserVO) {
+        Page<ArticleDO> articleDOPage = this.listArticleByPage(articleQueryDTO, loginUserVO);
+        Page<ArticleVO> articleVOPage = new Page<>();
+        BeanUtil.copyProperties(articleDOPage, articleVOPage);
+        articleVOPage.setRecords(articleDOPage.getRecords().stream().map(ArticleVO::obj2vo).collect(Collectors.toList()));
+        return articleVOPage;
     }
 
     /**
@@ -421,7 +430,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, ArticleDO>
         return articleDetailVO;
     }
 
-    private LambdaQueryWrapper<ArticleDO> buildQueryWrapper(ArticleQueryDTO articleQueryDTO) {
+    private LambdaQueryWrapper<ArticleDO> buildQueryWrapper(ArticleQueryDTO articleQueryDTO, LoginUserVO loginUserVO) {
         LambdaQueryWrapper<ArticleDO> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         Long userId = articleQueryDTO.getUserId();
         String title = articleQueryDTO.getTitle();
@@ -442,8 +451,11 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, ArticleDO>
         lambdaQueryWrapper.le(maxReadTime != null, ArticleDO::getReadTime, maxReadTime);
         lambdaQueryWrapper.eq(isOriginal != null, ArticleDO::getIsOriginal, isOriginal);
         lambdaQueryWrapper.eq(status != null, ArticleDO::getStatus, status);
-        // 排除草稿
-        lambdaQueryWrapper.ne(ArticleDO::getStatus, ArticleStatusEnum.DRAFT.getCode());
+        // 只有本人能查看草稿
+        if (!loginUserVO.getId().equals(articleQueryDTO.getUserId())) {
+            lambdaQueryWrapper.ne(ArticleDO::getStatus, ArticleStatusEnum.DRAFT.getCode());
+        }
+
         return lambdaQueryWrapper;
 
     }

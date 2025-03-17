@@ -19,10 +19,12 @@ package edu.neuq.techhub.controller.user;
 
 import cn.dev33.satoken.annotation.SaIgnore;
 import cn.dev33.satoken.stp.StpUtil;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import edu.neuq.techhub.common.BaseResponse;
 import edu.neuq.techhub.common.CursorPageResult;
 import edu.neuq.techhub.common.ResultUtils;
 import edu.neuq.techhub.domain.dto.article.ArticleDraftUpdateDTO;
+import edu.neuq.techhub.domain.dto.article.ArticleQueryDTO;
 import edu.neuq.techhub.domain.dto.article.ArticleSearchDTO;
 import edu.neuq.techhub.domain.vo.article.ArticleDetailVO;
 import edu.neuq.techhub.domain.vo.article.ArticleVO;
@@ -31,6 +33,7 @@ import edu.neuq.techhub.service.ArticleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -78,6 +81,15 @@ public class ArticleController {
     @SaIgnore
     public BaseResponse<CursorPageResult<ArticleVO, ArticleSearchDTO.ArticleCursor>> listArticleByCursorPage(@RequestBody ArticleSearchDTO articleSearchDTO) {
         CursorPageResult<ArticleVO, ArticleSearchDTO.ArticleCursor> result = articleService.listArticleByCursorPage(articleSearchDTO);
+        return ResultUtils.success(result);
+    }
+
+    @Operation(summary = "查询我的文章")
+    @GetMapping("/my")
+    public BaseResponse<Page<ArticleVO>> listArticleByCursorPage(@ParameterObject ArticleQueryDTO articleQueryDTO) {
+        LoginUserVO loginUserVO = (LoginUserVO) StpUtil.getSession().get("user");
+        articleQueryDTO.setUserId(loginUserVO.getId());
+        Page<ArticleVO> result = articleService.listMyArticleByPage(articleQueryDTO, loginUserVO);
         return ResultUtils.success(result);
     }
 

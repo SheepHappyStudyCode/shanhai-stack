@@ -43,7 +43,8 @@ public class ArticleManageController {
     @Operation(summary = "分页查询文章")
     @GetMapping
     public BaseResponse<Page<ArticleDO>> listArticleByPage(@ParameterObject ArticleQueryDTO articleQueryDTO) {
-        Page<ArticleDO> articlePageResult = articleService.listArticleByPage(articleQueryDTO);
+        LoginUserVO loginUserVO = (LoginUserVO) StpUtil.getSession().get("user");
+        Page<ArticleDO> articlePageResult = articleService.listArticleByPage(articleQueryDTO, loginUserVO);
         return ResultUtils.success(articlePageResult);
     }
 

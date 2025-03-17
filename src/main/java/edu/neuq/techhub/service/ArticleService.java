@@ -41,7 +41,7 @@ public interface ArticleService extends IService<ArticleDO> {
 
     void publishArticle(ArticleDraftUpdateDTO articleDraftUpdateDTO, Long userId);
 
-    Page<ArticleDO> listArticleByPage(ArticleQueryDTO articleQueryDTO);
+    Page<ArticleDO> listArticleByPage(ArticleQueryDTO articleQueryDTO, LoginUserVO loginUserVO);
 
     void passArticle(Long articleId, Long userId);
 
@@ -50,4 +50,6 @@ public interface ArticleService extends IService<ArticleDO> {
     ArticleDetailVO getArticleDetailById(Long articleId, LoginUserVO loginUserVO);
 
     CursorPageResult<ArticleVO, ArticleSearchDTO.ArticleCursor> listArticleByCursorPage(ArticleSearchDTO articleSearchDTO);
+
+    Page<ArticleVO> listMyArticleByPage(ArticleQueryDTO articleQueryDTO, LoginUserVO loginUserVO);
 }
