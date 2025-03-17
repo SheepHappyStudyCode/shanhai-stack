@@ -19,6 +19,7 @@ package edu.neuq.techhub.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -287,7 +288,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, ArticleDO>
 
     private ArticleSearchDTO.ArticleCursor buildNextCursor(ArticleVO article, ArticleSortFieldEnum sortFiledEnum) {
         ArticleSearchDTO.ArticleCursor cursor = new ArticleSearchDTO.ArticleCursor();
-        cursor.setId(article.getId());
+        cursor.setArticleId(article.getId());
 
         // 根据排序字段设置对应值
         switch (sortFiledEnum) {
@@ -319,21 +320,21 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, ArticleDO>
         // 构造游标分页条件
         if (!articleSearchDTO.isFirstQuery()) {
             ArticleSearchDTO.ArticleCursor cursor = articleSearchDTO.getCursor();
-            Long cursorId = cursor.getId();
-
+            Long articleId = cursor.getArticleId();
             // 获取排序字段的值
             Object sortValue = getSortValue(cursor, sortFiledEnum);
-
+            // 校验游标值
+            ThrowUtils.throwIf(ObjectUtil.hasEmpty(articleId, sortValue), ErrorCode.PARAMS_ERROR, "游标值不能为空");
             if (asc) {
-                // 升序：(sortField > sortValue) OR (sortField = sortValue AND id > cursorId)
+                // 升序：(sortField > sortValue) OR (sortField = sortValue AND id > articleId)
                 queryWrapper.and(w -> w
                         .gt(sortField, sortValue)
-                        .or(o -> o.eq(sortField, sortValue).gt("id", cursorId)));
+                        .or(o -> o.eq(sortField, sortValue).gt("id", articleId)));
             } else {
-                // 降序：(sortField < sortValue) OR (sortField = sortValue AND id < cursorId)
+                // 降序：(sortField < sortValue) OR (sortField = sortValue AND id < articleId)
                 queryWrapper.and(w -> w
                         .lt(sortField, sortValue)
-                        .or(o -> o.eq(sortField, sortValue).lt("id", cursorId)));
+                        .or(o -> o.eq(sortField, sortValue).lt("id", articleId)));
             }
         }
 

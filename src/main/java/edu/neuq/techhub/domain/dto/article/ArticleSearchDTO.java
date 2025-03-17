@@ -33,7 +33,7 @@ public class ArticleSearchDTO extends CursorPageRequest<ArticleSearchDTO.Article
     @Data
     public static class ArticleCursor {
 
-        private Long id;
+        private Long articleId;
         @JsonFormat(pattern = DateUtils.YYYY_MM_DD_HH_MM_SS)
         private Date publishTime;
         private Integer likeCount;
