@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package edu.neuq.techhub.controller.user;
+package edu.neuq.techhub.controller.user.article;
 
 import cn.dev33.satoken.annotation.SaIgnore;
 import edu.neuq.techhub.common.BaseResponse;

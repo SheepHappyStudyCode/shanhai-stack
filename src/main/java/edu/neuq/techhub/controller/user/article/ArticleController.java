@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package edu.neuq.techhub.controller.user;
+package edu.neuq.techhub.controller.user.article;
 
 import cn.dev33.satoken.annotation.SaIgnore;
 import cn.dev33.satoken.stp.StpUtil;

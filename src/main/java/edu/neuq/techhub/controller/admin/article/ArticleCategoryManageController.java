@@ -30,8 +30,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/manage/article/categories")
 @RequiredArgsConstructor
@@ -66,12 +64,4 @@ public class ArticleCategoryManageController {
         ThrowUtils.throwIf(!articleCategoryService.removeById(id), ErrorCode.SYSTEM_ERROR);
         return ResultUtils.success(0);
     }
-
-    @Operation(summary = "查询所有文章分类")
-    @GetMapping
-    public BaseResponse<List<ArticleCategoryDO>> getAllCategories() {
-        List<ArticleCategoryDO> categoryDOList = articleCategoryService.lambdaQuery().orderByAsc(ArticleCategoryDO::getSort).list();
-        return ResultUtils.success(categoryDOList);
-    }
-
 }
