@@ -15,13 +15,12 @@
  * limitations under the License.
  */
 
-package edu.neuq.techhub.controller.user;
+package edu.neuq.techhub.controller.admin;
 
-import cn.dev33.satoken.stp.StpUtil;
+import cn.dev33.satoken.annotation.SaIgnore;
 import edu.neuq.techhub.common.BaseResponse;
 import edu.neuq.techhub.common.ResultUtils;
 import edu.neuq.techhub.domain.dto.user.UserLoginDTO;
-import edu.neuq.techhub.domain.dto.user.UserRegisterDTO;
 import edu.neuq.techhub.domain.vo.user.LoginUserVO;
 import edu.neuq.techhub.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,38 +32,22 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/admin/auth")
 @RequiredArgsConstructor
-@Tag(name = "权限模块", description = "包含用户注册、登录")
-public class AuthController {
+@Tag(name = "管理员权限接口")
+public class AdminAuthController {
 
     private final AuthService authService;
-
-    /**
-     * 用户注册
-     */
-    @PostMapping("/register")
-    @Operation(summary = "用户注册")
-    public BaseResponse<LoginUserVO> userRegister(@RequestBody UserRegisterDTO userRegisterDto) {
-        LoginUserVO loginUserVO = authService.userRegister(userRegisterDto);
-        return ResultUtils.success(loginUserVO);
-    }
 
     /**
      * 用户登录
      */
     @PostMapping("/login/password")
     @Operation(summary = "使用密码登录")
+    @SaIgnore
     public BaseResponse<LoginUserVO> loginByPassword(@RequestBody UserLoginDTO userLoginDTO) {
-        LoginUserVO loginUserVO = authService.userLoginByPassword(userLoginDTO, false);
+        LoginUserVO loginUserVO = authService.userLoginByPassword(userLoginDTO, true);
         return ResultUtils.success(loginUserVO);
-    }
-
-    @PostMapping("/logout")
-    @Operation(summary = "退出登录")
-    public BaseResponse<Integer> userLogout() {
-        StpUtil.logout();
-        return ResultUtils.success(0);
     }
 
 }

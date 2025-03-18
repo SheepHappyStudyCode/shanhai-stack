@@ -25,5 +25,5 @@ public interface AuthService {
 
     LoginUserVO userRegister(UserRegisterDTO userRegisterDto);
 
-    LoginUserVO userLoginByPassword(UserLoginDTO userLoginDTO);
+    LoginUserVO userLoginByPassword(UserLoginDTO userLoginDTO, boolean requireAdmin);
 }

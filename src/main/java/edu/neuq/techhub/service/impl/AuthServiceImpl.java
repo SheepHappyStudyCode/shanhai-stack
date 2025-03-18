@@ -84,7 +84,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public LoginUserVO userLoginByPassword(UserLoginDTO userLoginDTO) {
+    public LoginUserVO userLoginByPassword(UserLoginDTO userLoginDTO, boolean requireAdmin) {
         // 校验参数
         ThrowUtils.throwIf(userLoginDTO == null, ErrorCode.PARAMS_ERROR, "参数为空");
         String username = userLoginDTO.getUsername();
@@ -97,6 +97,10 @@ public class AuthServiceImpl implements AuthService {
         ThrowUtils.throwIf(userDO == null, ErrorCode.PARAMS_ERROR, "用户不存在");
         // 用户是否被封禁
         ThrowUtils.throwIf(userDO.getStatus().equals(UserStatusEnum.BAN.getValue()), ErrorCode.OPERATION_ERROR, "用户被封禁，请联系管理员解封");
+        // 判断是否需要管理员身份
+        if (requireAdmin) {
+            ThrowUtils.throwIf(!userDO.getRole().equals(UserRoleEnum.ADMIN.getValue()), ErrorCode.NO_AUTH_ERROR, "只有管理员才能登录");
+        }
         // 密码是否正确
         boolean checkpw = BCrypt.checkpw(password, userDO.getPassword());
         ThrowUtils.throwIf(!checkpw, ErrorCode.PARAMS_ERROR, "密码不正确");
