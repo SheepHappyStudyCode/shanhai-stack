@@ -27,6 +27,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import edu.neuq.techhub.domain.dto.user.UserEditDTO;
 import edu.neuq.techhub.domain.dto.user.UserQueryDTO;
 import edu.neuq.techhub.domain.entity.UserDO;
+import edu.neuq.techhub.domain.enums.user.UserRoleEnum;
 import edu.neuq.techhub.domain.enums.user.UserStatusEnum;
 import edu.neuq.techhub.domain.vo.user.LoginUserVO;
 import edu.neuq.techhub.exception.BusinessException;
@@ -85,6 +86,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO>
         ThrowUtils.throwIf(userDO == null, ErrorCode.PARAMS_ERROR, "用户不存在");
         // 校验用户是否已被封禁
         ThrowUtils.throwIf(userDO.getStatus().equals(UserStatusEnum.BAN.getValue()), ErrorCode.OPERATION_ERROR, "用户已被封禁");
+        // 校验用户是否是管理员
+        ThrowUtils.throwIf(userDO.getRole().equals(UserRoleEnum.ADMIN.getValue()), ErrorCode.NO_AUTH_ERROR, "管理员不能被封禁");
         // 封禁用户
         UserDO updateUser = new UserDO();
         updateUser.setId(id);
