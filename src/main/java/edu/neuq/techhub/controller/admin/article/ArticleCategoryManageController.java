@@ -20,7 +20,7 @@ package edu.neuq.techhub.controller.admin.article;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import edu.neuq.techhub.common.BaseResponse;
 import edu.neuq.techhub.common.ResultUtils;
-import edu.neuq.techhub.domain.dto.article.category.AddArticleCategoryDTO;
+import edu.neuq.techhub.domain.dto.article.category.ArticleCategoryAddDTO;
 import edu.neuq.techhub.domain.entity.ArticleCategoryDO;
 import edu.neuq.techhub.exception.ErrorCode;
 import edu.neuq.techhub.exception.ThrowUtils;
@@ -42,9 +42,9 @@ public class ArticleCategoryManageController {
 
     @Operation(summary = "添加文章分类")
     @PostMapping
-    public BaseResponse<Integer> addArticleCategory(@RequestBody AddArticleCategoryDTO addArticleCategoryDTO) {
-        String name = addArticleCategoryDTO.getName();
-        Integer sort = addArticleCategoryDTO.getSort();
+    public BaseResponse<Integer> addArticleCategory(@RequestBody ArticleCategoryAddDTO articleCategoryAddDTO) {
+        String name = articleCategoryAddDTO.getName();
+        Integer sort = articleCategoryAddDTO.getSort();
         LambdaQueryWrapper<ArticleCategoryDO> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ArticleCategoryDO::getName, name);
         ArticleCategoryDO existCategory = articleCategoryService.getOne(queryWrapper);

@@ -15,16 +15,21 @@
  * limitations under the License.
  */
 
-package edu.neuq.techhub.domain.dto.article.category;
+package edu.neuq.techhub.domain.vo.article;
 
+import edu.neuq.techhub.domain.entity.ArticleTagDO;
 import lombok.Data;
+import org.springframework.beans.BeanUtils;
 
-/**
- * 文章分类表
- * @TableName sys_article_category
- */
+import java.util.List;
+
 @Data
-public class AddArticleCategoryDTO {
+public class ArticleTagVO {
+
+    /**
+     * 标签 ID
+     */
+    private Long id;
 
     /**
      * 名称
@@ -35,4 +40,17 @@ public class AddArticleCategoryDTO {
      * 排序
      */
     private Integer sort;
+
+    private Long parentId;
+
+    /**
+     * 子标签列表
+     */
+    private List<ArticleTagVO> children;
+
+    public static ArticleTagVO obj2vo(ArticleTagDO articleTagDO) {
+        ArticleTagVO articleTagVO = new ArticleTagVO();
+        BeanUtils.copyProperties(articleTagDO, articleTagVO);
+        return articleTagVO;
+    }
 }
