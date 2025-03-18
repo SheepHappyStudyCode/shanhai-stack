@@ -17,11 +17,11 @@
 
 package edu.neuq.techhub.controller.user;
 
-import cn.dev33.satoken.stp.StpUtil;
 import edu.neuq.techhub.common.BaseResponse;
 import edu.neuq.techhub.common.ResultUtils;
 import edu.neuq.techhub.domain.vo.user.LoginUserVO;
 import edu.neuq.techhub.service.UserFollowService;
+import edu.neuq.techhub.utils.UserUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -41,8 +41,8 @@ public class FollowController {
     @PostMapping("/{id}/follow")
     @Operation(summary = "关注 / 取关某个用户")
     public BaseResponse<Integer> followUserById(@PathVariable Long id) {
-        LoginUserVO loginUserVO = (LoginUserVO) StpUtil.getSession().get("user");
-        Integer result = userFollowService.followUserById(loginUserVO.getId(), id);
+        LoginUserVO loginUser = UserUtils.getLoginUser();
+        Integer result = userFollowService.followUserById(loginUser.getId(), id);
         return ResultUtils.success(result);
     }
 

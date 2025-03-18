@@ -30,12 +30,11 @@ import edu.neuq.techhub.common.CursorPageResult;
 import edu.neuq.techhub.domain.dto.article.ArticleDraftUpdateDTO;
 import edu.neuq.techhub.domain.dto.article.ArticleQueryDTO;
 import edu.neuq.techhub.domain.dto.article.ArticleSearchDTO;
-import edu.neuq.techhub.domain.entity.ArticleCategoryDO;
-import edu.neuq.techhub.domain.entity.ArticleContentDO;
-import edu.neuq.techhub.domain.entity.ArticleDO;
-import edu.neuq.techhub.domain.entity.UserDO;
+import edu.neuq.techhub.domain.entity.*;
+import edu.neuq.techhub.domain.enums.LikeStatusEnum;
 import edu.neuq.techhub.domain.enums.article.ArticleSortFieldEnum;
 import edu.neuq.techhub.domain.enums.article.ArticleStatusEnum;
+import edu.neuq.techhub.domain.enums.article.CollectStatusEnum;
 import edu.neuq.techhub.domain.enums.user.UserRoleEnum;
 import edu.neuq.techhub.domain.vo.article.ArticleDetailVO;
 import edu.neuq.techhub.domain.vo.article.ArticleVO;
@@ -44,10 +43,7 @@ import edu.neuq.techhub.domain.vo.user.UserVO;
 import edu.neuq.techhub.exception.BusinessException;
 import edu.neuq.techhub.exception.ErrorCode;
 import edu.neuq.techhub.exception.ThrowUtils;
-import edu.neuq.techhub.mapper.ArticleCategoryMapper;
-import edu.neuq.techhub.mapper.ArticleContentMapper;
-import edu.neuq.techhub.mapper.ArticleMapper;
-import edu.neuq.techhub.mapper.UserMapper;
+import edu.neuq.techhub.mapper.*;
 import edu.neuq.techhub.service.ArticleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
@@ -73,6 +69,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, ArticleDO>
     private final ArticleContentMapper articleContentMapper;
     private final ArticleCategoryMapper articleCategoryMapper;
     private final UserMapper userMapper;
+    private final ArticleLikeMapper articleLikeMapper;
+    private final ArticleCollectMapper articleCollectMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -205,7 +203,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, ArticleDO>
     }
 
     @Override
-    public CursorPageResult<ArticleVO, ArticleSearchDTO.ArticleCursor> listArticleByCursorPage(ArticleSearchDTO articleSearchDTO) {
+    public CursorPageResult<ArticleVO, ArticleSearchDTO.ArticleCursor> listArticleByCursorPage(ArticleSearchDTO articleSearchDTO, LoginUserVO loginUserVO) {
         // 参数校验
         ThrowUtils.throwIf(articleSearchDTO == null, ErrorCode.PARAMS_ERROR);
         int size = articleSearchDTO.getSize();
@@ -231,7 +229,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, ArticleDO>
         List<ArticleVO> articleVOList = articleList.parallelStream()
                 .map(ArticleVO::obj2vo)
                 .collect(Collectors.toList());
-        fillArticleVOList(articleVOList);
+        fillArticleVOList(articleVOList, loginUserVO);
+
         // 构造下一页的游标
         ArticleSearchDTO.ArticleCursor nextCursor = null;
         if (hasMore && !articleVOList.isEmpty()) {
@@ -305,6 +304,41 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, ArticleDO>
             Optional.ofNullable(articleVO.getUserId())
                     .map(userVOMap::get)
                     .ifPresent(articleVO::setUserVO);
+        }
+    }
+
+    public void fillArticleVOList(List<ArticleVO> articleVOList, LoginUserVO loginUser) {
+        fillArticleVOList(articleVOList);
+        if (loginUser != null) {
+            // 判断用户是否点过赞和收藏过
+            articleVOList.parallelStream().forEach(articleVO -> {
+                checkArticleLikeAndCollect(articleVO, loginUser.getId());
+            });
+        }
+    }
+
+    /**
+     * 判断文章是否被点赞或者收藏过
+     * @param articleVO 文章
+     * @param userId 用户 id
+     */
+    public void checkArticleLikeAndCollect(ArticleVO articleVO, Long userId) {
+        Long articleId = articleVO.getId();
+        // 判断是否点赞
+        LambdaQueryWrapper<ArticleLikeDO> likeQueryWrapper = new LambdaQueryWrapper<>();
+        likeQueryWrapper.eq(ArticleLikeDO::getArticleId, articleId);
+        likeQueryWrapper.eq(ArticleLikeDO::getUserId, userId);
+        ArticleLikeDO articleLikeDO = articleLikeMapper.selectOne(likeQueryWrapper);
+        if (articleLikeDO != null) {
+            articleVO.setLiked(articleLikeDO.getStatus().equals(LikeStatusEnum.LIKE.getCode()));
+        }
+        // 判断是否收藏
+        LambdaQueryWrapper<ArticleCollectDO> collectQueryWrapper = new LambdaQueryWrapper<>();
+        collectQueryWrapper.eq(ArticleCollectDO::getArticleId, articleId);
+        collectQueryWrapper.eq(ArticleCollectDO::getUserId, userId);
+        ArticleCollectDO articleCollectDO = articleCollectMapper.selectOne(collectQueryWrapper);
+        if (articleCollectDO != null) {
+            articleVO.setCollected(articleCollectDO.getStatus().equals(CollectStatusEnum.COLLECT.getCode()));
         }
     }
 

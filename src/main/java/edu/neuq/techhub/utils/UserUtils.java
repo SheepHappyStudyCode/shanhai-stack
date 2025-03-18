@@ -25,4 +25,5 @@ public class UserUtils {
     public static LoginUserVO getLoginUser() {
         return (LoginUserVO) StpUtil.getSession().get("user");
     }
+
 }

@@ -49,7 +49,7 @@ public interface ArticleService extends IService<ArticleDO> {
 
     ArticleDetailVO getArticleDetailById(Long articleId, LoginUserVO loginUserVO);
 
-    CursorPageResult<ArticleVO, ArticleSearchDTO.ArticleCursor> listArticleByCursorPage(ArticleSearchDTO articleSearchDTO);
+    CursorPageResult<ArticleVO, ArticleSearchDTO.ArticleCursor> listArticleByCursorPage(ArticleSearchDTO articleSearchDTO, LoginUserVO loginUserVO);
 
     Page<ArticleVO> listMyArticleByPage(ArticleQueryDTO articleQueryDTO, LoginUserVO loginUserVO);
 

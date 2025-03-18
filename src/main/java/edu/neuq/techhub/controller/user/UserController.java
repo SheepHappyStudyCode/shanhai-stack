@@ -18,7 +18,6 @@
 package edu.neuq.techhub.controller.user;
 
 import cn.dev33.satoken.annotation.SaIgnore;
-import cn.dev33.satoken.stp.StpUtil;
 import edu.neuq.techhub.common.BaseResponse;
 import edu.neuq.techhub.common.ResultUtils;
 import edu.neuq.techhub.domain.dto.user.UserEditDTO;
@@ -26,6 +25,7 @@ import edu.neuq.techhub.domain.entity.UserDO;
 import edu.neuq.techhub.domain.vo.user.LoginUserVO;
 import edu.neuq.techhub.domain.vo.user.UserVO;
 import edu.neuq.techhub.service.UserService;
+import edu.neuq.techhub.utils.UserUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -43,8 +43,8 @@ public class UserController {
     @GetMapping("/me")
     @Operation(summary = "查询我的信息")
     public BaseResponse<LoginUserVO> getMyInfo() {
-        LoginUserVO loginUserVO = (LoginUserVO) StpUtil.getSession().get("user");
-        return ResultUtils.success(loginUserVO);
+        LoginUserVO loginUser = UserUtils.getLoginUser();
+        return ResultUtils.success(loginUser);
     }
 
     @GetMapping("/{id}")
@@ -60,8 +60,8 @@ public class UserController {
     @PatchMapping("/me")
     @Operation(summary = "编辑个人信息")
     public BaseResponse<Integer> editMe(@RequestBody UserEditDTO userEditDTO) {
-        LoginUserVO loginUserVO = (LoginUserVO) StpUtil.getSession().get("user");
-        userService.editById(userEditDTO, loginUserVO.getId());
+        LoginUserVO loginUser = UserUtils.getLoginUser();
+        userService.editById(userEditDTO, loginUser.getId());
         return ResultUtils.success(0);
     }
 

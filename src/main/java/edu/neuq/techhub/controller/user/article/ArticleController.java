@@ -30,6 +30,7 @@ import edu.neuq.techhub.domain.vo.article.ArticleDetailVO;
 import edu.neuq.techhub.domain.vo.article.ArticleVO;
 import edu.neuq.techhub.domain.vo.user.LoginUserVO;
 import edu.neuq.techhub.service.ArticleService;
+import edu.neuq.techhub.utils.UserUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -47,32 +48,32 @@ public class ArticleController {
     @PostMapping("/draft")
     @Operation(summary = "创建文章草稿")
     public BaseResponse<Long> createDraft() {
-        LoginUserVO loginUserVO = (LoginUserVO) StpUtil.getSession().get("user");
-        Long id = articleService.createDraft(loginUserVO.getId());
+        LoginUserVO loginUser = UserUtils.getLoginUser();
+        Long id = articleService.createDraft(loginUser.getId());
         return ResultUtils.success(id);
     }
 
     @PatchMapping("/draft")
     @Operation(summary = "保存文章草稿")
     public BaseResponse<Integer> saveDraft(@RequestBody ArticleDraftUpdateDTO articleDraftUpdateDTO) {
-        LoginUserVO loginUserVO = (LoginUserVO) StpUtil.getSession().get("user");
-        articleService.saveDraft(articleDraftUpdateDTO, loginUserVO.getId());
+        LoginUserVO loginUser = UserUtils.getLoginUser();
+        articleService.saveDraft(articleDraftUpdateDTO, loginUser.getId());
         return ResultUtils.success(0);
     }
 
     @PostMapping("/publish")
     @Operation(summary = "发布文章")
     public BaseResponse<Integer> publishArticle(@RequestBody ArticleDraftUpdateDTO articleDraftUpdateDTO) {
-        LoginUserVO loginUserVO = (LoginUserVO) StpUtil.getSession().get("user");
-        articleService.publishArticle(articleDraftUpdateDTO, loginUserVO.getId());
+        LoginUserVO loginUser = UserUtils.getLoginUser();
+        articleService.publishArticle(articleDraftUpdateDTO, loginUser.getId());
         return ResultUtils.success(0);
     }
 
     @Operation(summary = "根据 id 查询文章")
     @GetMapping("/{id}")
     public BaseResponse<ArticleDetailVO> getArticleDetailById(@PathVariable Long id) {
-        LoginUserVO loginUserVO = (LoginUserVO) StpUtil.getSession().get("user");
-        ArticleDetailVO articleDetailVO = articleService.getArticleDetailById(id, loginUserVO);
+        LoginUserVO loginUser = UserUtils.getLoginUser();
+        ArticleDetailVO articleDetailVO = articleService.getArticleDetailById(id, loginUser);
         return ResultUtils.success(articleDetailVO);
     }
 
@@ -80,24 +81,25 @@ public class ArticleController {
     @PostMapping("/search")
     @SaIgnore
     public BaseResponse<CursorPageResult<ArticleVO, ArticleSearchDTO.ArticleCursor>> listArticleByCursorPage(@RequestBody ArticleSearchDTO articleSearchDTO) {
-        CursorPageResult<ArticleVO, ArticleSearchDTO.ArticleCursor> result = articleService.listArticleByCursorPage(articleSearchDTO);
+        LoginUserVO loginUser = StpUtil.isLogin() ? UserUtils.getLoginUser() : null;
+        CursorPageResult<ArticleVO, ArticleSearchDTO.ArticleCursor> result = articleService.listArticleByCursorPage(articleSearchDTO, loginUser);
         return ResultUtils.success(result);
     }
 
     @Operation(summary = "查询我的文章")
     @GetMapping("/my")
     public BaseResponse<Page<ArticleVO>> listArticleByCursorPage(@ParameterObject ArticleQueryDTO articleQueryDTO) {
-        LoginUserVO loginUserVO = (LoginUserVO) StpUtil.getSession().get("user");
-        articleQueryDTO.setUserId(loginUserVO.getId());
-        Page<ArticleVO> result = articleService.listMyArticleByPage(articleQueryDTO, loginUserVO);
+        LoginUserVO loginUser = UserUtils.getLoginUser();
+        articleQueryDTO.setUserId(loginUser.getId());
+        Page<ArticleVO> result = articleService.listMyArticleByPage(articleQueryDTO, loginUser);
         return ResultUtils.success(result);
     }
 
     @Operation(summary = "删除我的文章")
     @DeleteMapping("/{id}")
     public BaseResponse<Integer> removeMyArticleById(@PathVariable Long id) {
-        LoginUserVO loginUserVO = (LoginUserVO) StpUtil.getSession().get("user");
-        articleService.removeMyArticleById(id, loginUserVO.getId());
+        LoginUserVO loginUser = UserUtils.getLoginUser();
+        articleService.removeMyArticleById(id, loginUser.getId());
         return ResultUtils.success(0);
     }
 

@@ -34,6 +34,7 @@ import edu.neuq.techhub.exception.ErrorCode;
 import edu.neuq.techhub.exception.ThrowUtils;
 import edu.neuq.techhub.mapper.UserMapper;
 import edu.neuq.techhub.service.UserService;
+import edu.neuq.techhub.utils.UserUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -123,7 +124,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO>
         boolean result = this.updateById(userDO);
         ThrowUtils.throwIf(!result, ErrorCode.SYSTEM_ERROR);
         // 修改 session 的用户信息
-        LoginUserVO loginUserVO = (LoginUserVO) StpUtil.getSession().get("user");
-        BeanUtil.copyProperties(userDO, loginUserVO, CopyOptions.create().setIgnoreNullValue(true).setIgnoreError(true));
+        LoginUserVO loginUser = UserUtils.getLoginUser();
+        BeanUtil.copyProperties(userDO, loginUser, CopyOptions.create().setIgnoreNullValue(true).setIgnoreError(true));
     }
 }

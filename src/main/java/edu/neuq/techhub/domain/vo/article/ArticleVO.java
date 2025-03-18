@@ -133,6 +133,9 @@ public class ArticleVO {
 
     private String categoryName;
 
+    private boolean isLiked = false;
+    private boolean isCollected = false;
+
     public static ArticleVO obj2vo(ArticleDO articleDO) {
         ArticleVO articleVO = new ArticleVO();
         BeanUtils.copyProperties(articleDO, articleVO);

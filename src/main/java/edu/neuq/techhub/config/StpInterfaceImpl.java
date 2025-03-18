@@ -18,8 +18,8 @@
 package edu.neuq.techhub.config;
 
 import cn.dev33.satoken.stp.StpInterface;
-import cn.dev33.satoken.stp.StpUtil;
 import edu.neuq.techhub.domain.vo.user.LoginUserVO;
+import edu.neuq.techhub.utils.UserUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -45,8 +45,8 @@ public class StpInterfaceImpl implements StpInterface {
     @Override
     public List<String> getRoleList(Object loginId, String loginType) {
         List<String> list = new ArrayList<>();
-        LoginUserVO loginUserVO = (LoginUserVO) StpUtil.getSession().get("user");
-        list.add(loginUserVO.getRole());
+        LoginUserVO loginUser = UserUtils.getLoginUser();
+        list.add(loginUser.getRole());
         return list;
     }
 
