@@ -27,7 +27,7 @@ import lombok.Data;
  */
 @TableName(value = "sys_article_category")
 @Data
-public class ArticleCategoryDO extends BaseDO {
+public class ArticleCategoryDO extends BaseDO1 {
 
     /**
      * 分类 ID

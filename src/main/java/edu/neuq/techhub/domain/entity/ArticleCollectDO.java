@@ -19,6 +19,7 @@ package edu.neuq.techhub.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.util.Date;
 
@@ -26,9 +27,10 @@ import java.util.Date;
  * 文章收藏表
  * @TableName sys_article_collect
  */
+@EqualsAndHashCode(callSuper = true)
 @TableName(value = "sys_article_collect")
 @Data
-public class ArticleCollectDO {
+public class ArticleCollectDO extends BaseDO2 {
 
     /**
      * ID
@@ -51,15 +53,4 @@ public class ArticleCollectDO {
      */
     private Integer status;
 
-    /**
-     * 创建时间
-     */
-    @TableField(fill = FieldFill.INSERT)
-    private Date createTime;
-
-    /**
-     * 修改时间
-     */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private Date updateTime;
 }

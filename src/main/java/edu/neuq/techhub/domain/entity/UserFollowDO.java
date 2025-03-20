@@ -30,7 +30,7 @@ import lombok.EqualsAndHashCode;
 @TableName(value = "sys_user_follow")
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class UserFollowDO extends BaseDO {
+public class UserFollowDO extends BaseDO1 {
 
     /**
      * ID

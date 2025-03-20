@@ -32,7 +32,7 @@ import java.util.Date;
 @EqualsAndHashCode(callSuper = true)
 @TableName(value = "sys_user")
 @Data
-public class UserDO extends BaseDO {
+public class UserDO extends BaseDO1 {
 
     /**
      * ID

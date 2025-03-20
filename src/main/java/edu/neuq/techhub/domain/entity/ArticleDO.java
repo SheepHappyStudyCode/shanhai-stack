@@ -30,7 +30,7 @@ import java.util.Date;
  */
 @TableName(value = "sys_article")
 @Data
-public class ArticleDO extends BaseDO {
+public class ArticleDO extends BaseDO1 {
 
     /**
      * 主键 id

@@ -19,6 +19,7 @@ package edu.neuq.techhub.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.util.Date;
 
@@ -26,9 +27,10 @@ import java.util.Date;
  * 文章点赞表
  * @TableName sys_article_like
  */
+@EqualsAndHashCode(callSuper = true)
 @TableName(value = "sys_article_like")
 @Data
-public class ArticleLikeDO {
+public class ArticleLikeDO extends BaseDO2{
 
     /**
      * ID
@@ -50,16 +52,4 @@ public class ArticleLikeDO {
      * 点赞状态 1-有效 0-取消
      */
     private Integer status;
-
-    /**
-     * 创建时间
-     */
-    @TableField(fill = FieldFill.INSERT)
-    private Date createTime;
-
-    /**
-     * 修改时间
-     */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private Date updateTime;
 }

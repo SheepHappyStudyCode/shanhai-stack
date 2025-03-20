@@ -30,7 +30,7 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 @TableName(value = "sys_article_tag")
 @Data
-public class ArticleTagDO extends BaseDO {
+public class ArticleTagDO extends BaseDO1 {
 
     /**
      * 标签 ID

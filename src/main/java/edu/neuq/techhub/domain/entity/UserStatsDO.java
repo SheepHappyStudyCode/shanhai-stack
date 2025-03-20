@@ -29,7 +29,7 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @TableName(value = "sys_user_stats")
-public class UserStatsDO extends BaseDO {
+public class UserStatsDO extends BaseDO1 {
 
     /**
      * 用户ID

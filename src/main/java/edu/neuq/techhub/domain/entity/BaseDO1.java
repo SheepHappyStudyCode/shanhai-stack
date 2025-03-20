@@ -17,31 +17,32 @@
 
 package edu.neuq.techhub.domain.entity;
 
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import lombok.Data;
 
-/**
- * 文章内容表
- * @TableName sys_article_content
- */
-@TableName(value = "sys_article_content")
+import java.util.Date;
+
 @Data
-public class ArticleContentDO extends BaseDO1 {
+public class BaseDO1 {
 
     /**
-     * 文章id
+     * 创建时间
      */
-    @TableId
-    private Long id;
+    @TableField(fill = FieldFill.INSERT)
+    private Date createTime;
 
     /**
-     * 文章内容html格式
+     * 修改时间
      */
-    private String contentHtml;
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private Date updateTime;
 
     /**
-     * 文章内容md格式
+     * 删除标志
      */
-    private String contentMd;
+    @TableField(fill = FieldFill.INSERT)
+    @TableLogic
+    private Integer delFlag;
 }

@@ -25,7 +25,7 @@ import lombok.Data;
 import java.util.Date;
 
 @Data
-public class BaseDO {
+public class BaseDO2 {
 
     /**
      * 创建时间
@@ -38,11 +38,4 @@ public class BaseDO {
      */
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private Date updateTime;
-
-    /**
-     * 删除标志
-     */
-    @TableField(fill = FieldFill.INSERT)
-    @TableLogic
-    private Integer delFlag;
 }
