@@ -30,12 +30,12 @@ CREATE TABLE `sys_article` (
   `cover` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '文章封面地址',
   `category_id` bigint unsigned DEFAULT NULL COMMENT '分类 id',
   `tags` varchar(512) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '文章标签 json',
-  `read_time` int NOT NULL DEFAULT '10' COMMENT '预估阅读时间(分钟)',
-  `is_original` tinyint(1) NOT NULL DEFAULT '1' COMMENT '是否原创  0：转载 1:原创',
+  `read_time` int DEFAULT NULL COMMENT '预估阅读时间(分钟)',
+  `is_original` tinyint(1) DEFAULT NULL COMMENT '是否原创  0：转载 1:原创',
   `original_url` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '转载地址',
   `publish_time` datetime DEFAULT NULL COMMENT '发布时间',
   `edit_time` datetime NOT NULL COMMENT '编辑时间',
-  `status` int NOT NULL DEFAULT '0' COMMENT '文章状态 0-草稿 1-已发布 2-待审核 3-审核通过 4-审核不通过 5-已下架',
+  `status` int NOT NULL DEFAULT '0' COMMENT '文章状态 0-草稿 1-已发布  2-审核通过 3-审核不通过 4-已下架',
   `reviewer_id` bigint unsigned DEFAULT NULL COMMENT '审核人 ID',
   `review_message` varchar(512) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '审核信息',
   `review_time` datetime DEFAULT NULL COMMENT '审核时间',
@@ -62,6 +62,7 @@ CREATE TABLE `sys_article` (
 
 LOCK TABLES `sys_article` WRITE;
 /*!40000 ALTER TABLE `sys_article` DISABLE KEYS */;
+INSERT INTO `sys_article` VALUES (1901161873001205762,1900560193582854145,'jvm 学习笔记','这是个笔记','',1900824884167049218,'[\"java\"]',10,1,'','2025-03-17 16:04:27','2025-03-17 16:04:27',2,1900560193582854145,NULL,'2025-03-16 17:53:53',0,0,0,1,'2025-03-16 14:41:27','2025-03-17 16:04:27',0),(1901162535810310146,1900560193582854145,'redis 学习笔记','这是个笔记','',1900824884167049218,'[\"java\"]',10,1,'','2025-03-17 16:05:05','2025-03-17 16:05:05',2,NULL,NULL,NULL,0,1,0,0,'2025-03-16 14:44:05','2025-03-17 16:05:05',0);
 /*!40000 ALTER TABLE `sys_article` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -94,6 +95,37 @@ INSERT INTO `sys_article_category` VALUES (1900824884167049218,'后端',10,'2025
 UNLOCK TABLES;
 
 --
+-- Table structure for table `sys_article_collect`
+--
+
+DROP TABLE IF EXISTS `sys_article_collect`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sys_article_collect` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
+  `user_id` bigint unsigned NOT NULL COMMENT '用户 ID',
+  `article_id` bigint unsigned NOT NULL COMMENT '文章 ID',
+  `status` tinyint(1) NOT NULL DEFAULT '1' COMMENT '收藏状态 1-有效 0-取消',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_user_article` (`user_id`,`article_id`) COMMENT '确保收藏关系唯一',
+  KEY `idx_article_id` (`article_id`) COMMENT '加速文章收藏数查询',
+  KEY `idx_user_id` (`user_id`) COMMENT '加速用户收藏列表查询'
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='文章收藏表';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `sys_article_collect`
+--
+
+LOCK TABLES `sys_article_collect` WRITE;
+/*!40000 ALTER TABLE `sys_article_collect` DISABLE KEYS */;
+INSERT INTO `sys_article_collect` VALUES (1,1900560193582854145,1901162535810310146,0,'2025-03-18 16:56:40','2025-03-18 16:56:40'),(2,1900560193582854145,1901161873001205762,1,'2025-03-18 17:27:53','2025-03-18 17:27:53');
+/*!40000 ALTER TABLE `sys_article_collect` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `sys_article_content`
 --
 
@@ -117,7 +149,68 @@ CREATE TABLE `sys_article_content` (
 
 LOCK TABLES `sys_article_content` WRITE;
 /*!40000 ALTER TABLE `sys_article_content` DISABLE KEYS */;
+INSERT INTO `sys_article_content` VALUES (1901161873001205762,'<h1>notebook</h1>','# notebook','2025-03-16 14:41:27','2025-03-17 16:04:27',0),(1901162535810310146,'<h1>notebook</h1>','# notebook','2025-03-16 14:44:05','2025-03-17 16:05:05',0);
 /*!40000 ALTER TABLE `sys_article_content` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `sys_article_like`
+--
+
+DROP TABLE IF EXISTS `sys_article_like`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sys_article_like` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
+  `user_id` bigint unsigned NOT NULL COMMENT '用户 ID',
+  `article_id` bigint unsigned NOT NULL COMMENT '文章 ID',
+  `status` tinyint(1) NOT NULL DEFAULT '1' COMMENT '点赞状态 1-有效 0-取消',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_user_article` (`user_id`,`article_id`) COMMENT '确保点赞关系唯一',
+  KEY `idx_article_id` (`article_id`) COMMENT '加速文章点赞数查询',
+  KEY `idx_user_id` (`user_id`) COMMENT '加速用户点赞列表查询'
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='文章点赞表';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `sys_article_like`
+--
+
+LOCK TABLES `sys_article_like` WRITE;
+/*!40000 ALTER TABLE `sys_article_like` DISABLE KEYS */;
+INSERT INTO `sys_article_like` VALUES (1,1900560193582854145,1901162535810310146,1,'2025-03-18 16:26:07','2025-03-18 16:26:07');
+/*!40000 ALTER TABLE `sys_article_like` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `sys_article_tag`
+--
+
+DROP TABLE IF EXISTS `sys_article_tag`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sys_article_tag` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '标签 ID',
+  `parent_id` bigint unsigned DEFAULT NULL COMMENT '父标签 ID',
+  `name` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '名称',
+  `sort` int NOT NULL DEFAULT '100' COMMENT '排序',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '修改时间',
+  `del_flag` tinyint(1) NOT NULL DEFAULT '0' COMMENT '删除标识 0-正常 1-删除',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='文章标签表';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `sys_article_tag`
+--
+
+LOCK TABLES `sys_article_tag` WRITE;
+/*!40000 ALTER TABLE `sys_article_tag` DISABLE KEYS */;
+INSERT INTO `sys_article_tag` VALUES (1,NULL,'后端',100,'2025-03-18 15:07:06','2025-03-18 15:13:34',1),(2,NULL,'前端',100,'2025-03-18 15:09:12','2025-03-18 15:09:12',0),(3,2,'前端',100,'2025-03-18 15:09:30','2025-03-18 15:09:30',0),(4,2,'vue',100,'2025-03-18 15:09:36','2025-03-18 15:09:36',0),(5,2,'react',100,'2025-03-18 15:09:45','2025-03-18 15:09:45',0),(6,2,'css',100,'2025-03-18 15:09:57','2025-03-18 15:09:57',0),(7,1,'java',100,'2025-03-18 15:10:05','2025-03-18 15:13:05',1),(8,1,'go',100,'2025-03-18 15:10:09','2025-03-18 15:13:34',1),(9,1,'c++',100,'2025-03-18 15:10:14','2025-03-18 15:13:34',1),(10,NULL,'后端',100,'2025-03-18 15:13:56','2025-03-18 15:13:56',0),(11,10,'后端',100,'2025-03-18 15:14:11','2025-03-18 15:14:11',0),(12,10,'java',100,'2025-03-18 15:14:17','2025-03-18 15:14:17',0),(13,10,'go',100,'2025-03-18 15:14:23','2025-03-18 15:14:23',0),(14,10,'c++',100,'2025-03-18 15:14:27','2025-03-18 15:14:27',0);
+/*!40000 ALTER TABLE `sys_article_tag` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -214,7 +307,7 @@ CREATE TABLE `sys_user_stats` (
 
 LOCK TABLES `sys_user_stats` WRITE;
 /*!40000 ALTER TABLE `sys_user_stats` DISABLE KEYS */;
-INSERT INTO `sys_user_stats` VALUES (1900560167108407298,0,0,0,1,'2025-03-14 22:50:29','2025-03-14 22:50:29',0),(1900560193582854145,0,0,1,0,'2025-03-14 22:50:36','2025-03-14 22:50:36',0),(1901102074129567746,0,0,0,0,'2025-03-16 10:43:50','2025-03-16 10:43:50',0);
+INSERT INTO `sys_user_stats` VALUES (1900560167108407298,0,0,0,1,'2025-03-14 22:50:29','2025-03-14 22:50:29',0),(1900560193582854145,1,1,1,0,'2025-03-14 22:50:36','2025-03-14 22:50:36',0),(1901102074129567746,0,0,0,0,'2025-03-16 10:43:50','2025-03-16 10:43:50',0);
 /*!40000 ALTER TABLE `sys_user_stats` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -227,4 +320,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-03-16 11:28:04
+-- Dump completed on 2025-03-20 11:55:28
