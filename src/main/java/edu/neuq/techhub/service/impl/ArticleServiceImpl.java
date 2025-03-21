@@ -488,6 +488,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, ArticleDO>
         Integer maxReadTime = articleQueryDTO.getMaxReadTime();
         Integer isOriginal = articleQueryDTO.getIsOriginal();
         Integer status = articleQueryDTO.getStatus();
+        Long articleId = articleQueryDTO.getArticleId();
 
         lambdaQueryWrapper.eq(userId != null, ArticleDO::getUserId, userId);
         lambdaQueryWrapper.like(StrUtil.isNotBlank(title), ArticleDO::getTitle, title);
@@ -498,6 +499,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, ArticleDO>
         lambdaQueryWrapper.le(maxReadTime != null, ArticleDO::getReadTime, maxReadTime);
         lambdaQueryWrapper.eq(isOriginal != null, ArticleDO::getIsOriginal, isOriginal);
         lambdaQueryWrapper.eq(status != null, ArticleDO::getStatus, status);
+        lambdaQueryWrapper.eq(articleId != null, ArticleDO::getId, articleId);
+
         // 只有本人能查看草稿
         if (!loginUserVO.getId().equals(articleQueryDTO.getUserId())) {
             lambdaQueryWrapper.ne(ArticleDO::getStatus, ArticleStatusEnum.DRAFT.getCode());
