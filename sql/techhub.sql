@@ -62,7 +62,7 @@ CREATE TABLE `sys_article` (
 
 LOCK TABLES `sys_article` WRITE;
 /*!40000 ALTER TABLE `sys_article` DISABLE KEYS */;
-INSERT INTO `sys_article` VALUES (1901161873001205762,1900560193582854145,'jvm 学习笔记','这是个笔记','',1900824884167049218,'[\"java\"]',10,1,'','2025-03-17 16:04:27','2025-03-17 16:04:27',2,1900560193582854145,NULL,'2025-03-16 17:53:53',0,0,0,1,'2025-03-16 14:41:27','2025-03-17 16:04:27',0),(1901162535810310146,1900560193582854145,'redis 学习笔记','这是个笔记','',1900824884167049218,'[\"java\"]',10,1,'','2025-03-17 16:05:05','2025-03-17 16:05:05',2,NULL,NULL,NULL,0,1,0,0,'2025-03-16 14:44:05','2025-03-17 16:05:05',0);
+INSERT INTO `sys_article` VALUES (1901161873001205762,1900560193582854145,'jvm 学习笔记','这是个笔记','',1900824884167049218,'[\"java\"]',10,1,'','2025-03-17 16:04:27','2025-03-17 16:04:27',2,1900560193582854145,NULL,'2025-03-16 17:53:53',0,0,2,1,'2025-03-16 14:41:27','2025-03-17 16:04:27',0),(1901162535810310146,1900560193582854145,'redis 学习笔记','这是个笔记','',1900824884167049218,'[\"java\"]',10,1,'','2025-03-17 16:05:05','2025-03-17 16:05:05',2,NULL,NULL,NULL,0,1,0,0,'2025-03-16 14:44:05','2025-03-17 16:05:05',0);
 /*!40000 ALTER TABLE `sys_article` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -123,6 +123,45 @@ LOCK TABLES `sys_article_collect` WRITE;
 /*!40000 ALTER TABLE `sys_article_collect` DISABLE KEYS */;
 INSERT INTO `sys_article_collect` VALUES (1,1900560193582854145,1901162535810310146,0,'2025-03-18 16:56:40','2025-03-18 16:56:40'),(2,1900560193582854145,1901161873001205762,1,'2025-03-18 17:27:53','2025-03-18 17:27:53');
 /*!40000 ALTER TABLE `sys_article_collect` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `sys_article_comment`
+--
+
+DROP TABLE IF EXISTS `sys_article_comment`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sys_article_comment` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '文章评论主键ID，自增唯一标识',
+  `article_id` bigint unsigned NOT NULL COMMENT '关联的文章ID，表明该评论所属的文章',
+  `user_id` bigint unsigned NOT NULL COMMENT '发表评论的用户ID',
+  `reply_user_id` bigint unsigned DEFAULT NULL COMMENT '回复人id',
+  `parent_id` bigint unsigned DEFAULT NULL COMMENT '父评论ID，用于实现回复评论的层级结构，若为顶级评论则为NULL',
+  `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '评论内容，使用utf8mb4字符集以支持更多字符类型',
+  `like_count` int DEFAULT '0' COMMENT '点赞数，记录该评论获得的点赞数量',
+  `is_stick` tinyint(1) DEFAULT '0' COMMENT '是否置顶',
+  `ip` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'ip',
+  `browser` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '浏览器',
+  `ip_source` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'ip来源',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `del_flag` tinyint(1) NOT NULL DEFAULT '0' COMMENT '删除标识 0-正常 1-删除',
+  PRIMARY KEY (`id`) USING BTREE,
+  KEY `idx_article_id` (`article_id`) USING BTREE,
+  KEY `idx_user_id` (`user_id`) USING BTREE,
+  KEY `idx_parent_id` (`parent_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=1902947342240210947 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci ROW_FORMAT=DYNAMIC COMMENT='文章评论';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `sys_article_comment`
+--
+
+LOCK TABLES `sys_article_comment` WRITE;
+/*!40000 ALTER TABLE `sys_article_comment` DISABLE KEYS */;
+INSERT INTO `sys_article_comment` VALUES (1902947093123719170,1901161873001205762,1900560193582854145,NULL,NULL,'我是个一级评论',0,0,'127.0.0.1',NULL,'未知','2025-03-21 12:55:17','2025-03-21 12:55:17',0),(1902947342240210946,1901161873001205762,1900560193582854145,NULL,1902947093123719170,'我是个二级评论',0,0,'127.0.0.1',NULL,'未知','2025-03-21 12:56:16','2025-03-21 12:56:16',0);
+/*!40000 ALTER TABLE `sys_article_comment` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -320,4 +359,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-03-20 11:55:28
+-- Dump completed on 2025-03-21 19:50:04
