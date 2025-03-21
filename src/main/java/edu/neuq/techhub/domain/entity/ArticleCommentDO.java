@@ -67,11 +67,6 @@ public class ArticleCommentDO extends BaseDO1 {
     private Integer likeCount;
 
     /**
-     * 回复数
-     */
-    private Integer replyCount;
-
-    /**
      * 是否置顶
      */
     private Integer isStick;

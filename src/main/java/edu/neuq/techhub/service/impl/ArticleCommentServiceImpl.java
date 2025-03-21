@@ -20,6 +20,7 @@ package edu.neuq.techhub.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import edu.neuq.techhub.domain.dto.article.comment.ArticleCommentAddDTO;
@@ -39,6 +40,7 @@ import edu.neuq.techhub.service.ArticleCommentService;
 import edu.neuq.techhub.utils.IpUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.function.Function;
@@ -53,9 +55,9 @@ public class ArticleCommentServiceImpl extends ServiceImpl<ArticleCommentMapper,
     private final ArticleMapper articleMapper;
 
     private final UserMapper userMapper;
-    private final UserStatsMapper userStatsMapper;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Long createComment(ArticleCommentAddDTO articleCommentAddDTO) {
         // 校验评论参数
         validate(articleCommentAddDTO);
@@ -68,6 +70,12 @@ public class ArticleCommentServiceImpl extends ServiceImpl<ArticleCommentMapper,
         articleCommentDO.setIpSource(IpUtils.getIp2region(ip));
         // 保存数据
         this.save(articleCommentDO);
+        // 文章评论数 +1
+        LambdaUpdateWrapper<ArticleDO> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(ArticleDO::getId, articleCommentDO.getArticleId());
+        updateWrapper.setIncrBy(true, ArticleDO::getCommentCount, 1);
+        int update = articleMapper.update(updateWrapper);
+        ThrowUtils.throwIf(update != 1, ErrorCode.SYSTEM_ERROR);
         return articleCommentDO.getId();
     }
 
@@ -187,11 +195,16 @@ public class ArticleCommentServiceImpl extends ServiceImpl<ArticleCommentMapper,
                 articleCommentVO.setAvatar(userDO.getAvatar());
             }
 
+
+
             // 填充二级评论及用户信息
             List<ArticleCommentVO> children = secondCommentMap.get(articleCommentVO.getId());
             articleCommentVO.setChildren(children != null ? children : new ArrayList<>());
 
             if (children != null) {
+                // 填充一级评论回复数
+                articleCommentVO.setReplyCount(children.size());
+                // 填充每一个子评论
                 children.forEach(childComment -> {
                     // 填充评论者信息
                     UserDO user = userMap.get(childComment.getUserId());

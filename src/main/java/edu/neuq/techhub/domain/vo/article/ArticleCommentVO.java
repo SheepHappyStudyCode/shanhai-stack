@@ -58,6 +58,9 @@ public class ArticleCommentVO {
     @Schema(description = "回复人昵称")
     private String replyNickname;
 
+    @Schema(description = "被回复的数量")
+    private int replyCount = 0;
+
     @Schema(description = "评论内容，使用utf8mb4字符集以支持更多字符类型")
     private String content;
 

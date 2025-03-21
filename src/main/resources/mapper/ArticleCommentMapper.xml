@@ -12,11 +12,9 @@
             <result property="parentId" column="parent_id" jdbcType="BIGINT"/>
             <result property="content" column="content" jdbcType="VARCHAR"/>
             <result property="likeCount" column="like_count" jdbcType="INTEGER"/>
-            <result property="replyCount" column="reply_count" jdbcType="INTEGER"/>
             <result property="isStick" column="is_stick" jdbcType="TINYINT"/>
             <result property="ip" column="ip" jdbcType="VARCHAR"/>
             <result property="browser" column="browser" jdbcType="VARCHAR"/>
-            <result property="system" column="system" jdbcType="VARCHAR"/>
             <result property="ipSource" column="ip_source" jdbcType="VARCHAR"/>
             <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
             <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
@@ -26,8 +24,8 @@
     <sql id="Base_Column_List">
         id,article_id,user_id,
         reply_user_id,parent_id,content,
-        like_count,reply_count,is_stick,
-        ip,browser,system,
+        like_countis_stick,
+        ip,browser
         ip_source,create_time,update_time,
         del_flag
     </sql>
