@@ -17,9 +17,12 @@
 
 package edu.neuq.techhub.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import edu.neuq.techhub.domain.dto.article.comment.ArticleCommentAddDTO;
+import edu.neuq.techhub.domain.dto.article.comment.ArticleCommentQueryDTO;
 import edu.neuq.techhub.domain.entity.ArticleCommentDO;
+import edu.neuq.techhub.domain.vo.article.ArticleCommentVO;
 
 /**
 * @author panda
@@ -29,4 +32,6 @@ import edu.neuq.techhub.domain.entity.ArticleCommentDO;
 public interface ArticleCommentService extends IService<ArticleCommentDO> {
 
     Long createComment(ArticleCommentAddDTO articleCommentAddDTO);
+
+    Page<ArticleCommentVO> listCommentsByPage(ArticleCommentQueryDTO articleCommentQueryDTO);
 }

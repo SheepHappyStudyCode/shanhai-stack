@@ -20,21 +20,29 @@ package edu.neuq.techhub.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import edu.neuq.techhub.domain.dto.article.comment.ArticleCommentAddDTO;
+import edu.neuq.techhub.domain.dto.article.comment.ArticleCommentQueryDTO;
 import edu.neuq.techhub.domain.entity.ArticleCommentDO;
 import edu.neuq.techhub.domain.entity.ArticleDO;
 import edu.neuq.techhub.domain.entity.UserDO;
 import edu.neuq.techhub.domain.enums.article.ArticleStatusEnum;
+import edu.neuq.techhub.domain.vo.article.ArticleCommentVO;
 import edu.neuq.techhub.exception.ErrorCode;
 import edu.neuq.techhub.exception.ThrowUtils;
 import edu.neuq.techhub.mapper.ArticleCommentMapper;
 import edu.neuq.techhub.mapper.ArticleMapper;
 import edu.neuq.techhub.mapper.UserMapper;
+import edu.neuq.techhub.mapper.UserStatsMapper;
 import edu.neuq.techhub.service.ArticleCommentService;
 import edu.neuq.techhub.utils.IpUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -45,6 +53,7 @@ public class ArticleCommentServiceImpl extends ServiceImpl<ArticleCommentMapper,
     private final ArticleMapper articleMapper;
 
     private final UserMapper userMapper;
+    private final UserStatsMapper userStatsMapper;
 
     @Override
     public Long createComment(ArticleCommentAddDTO articleCommentAddDTO) {
@@ -60,6 +69,150 @@ public class ArticleCommentServiceImpl extends ServiceImpl<ArticleCommentMapper,
         // 保存数据
         this.save(articleCommentDO);
         return articleCommentDO.getId();
+    }
+
+    @Override
+    public Page<ArticleCommentVO> listCommentsByPage(ArticleCommentQueryDTO articleCommentQueryDTO) {
+        // 参数校验
+        validateParams(articleCommentQueryDTO);
+
+        // 分页查询一级评论
+        Page<ArticleCommentDO> firstCommentDOPage = queryFirstLevelComments(articleCommentQueryDTO);
+
+        // 查询所有二级评论
+        Map<Long, List<ArticleCommentVO>> secondCommentMap = querySecondLevelComments(firstCommentDOPage);
+
+        // 查询所有相关用户信息
+        Map<Long, UserDO> userMap = queryUserInfo(firstCommentDOPage, secondCommentMap);
+
+        // 构建返回结果
+        return buildResultPage(firstCommentDOPage, secondCommentMap, userMap);
+    }
+
+    private void validateParams(ArticleCommentQueryDTO articleCommentQueryDTO) {
+        ThrowUtils.throwIf(articleCommentQueryDTO == null, ErrorCode.PARAMS_ERROR, "参数不能为空");
+
+        Long articleId = articleCommentQueryDTO.getArticleId();
+        ArticleDO articleDO = articleMapper.selectById(articleId);
+        ThrowUtils.throwIf(articleDO == null, ErrorCode.PARAMS_ERROR, "文章不存在");
+        ThrowUtils.throwIf(!articleDO.getStatus().equals(ArticleStatusEnum.REVIEW_PASSED.getCode()),
+                ErrorCode.PARAMS_ERROR, "文章没有过审");
+
+        int current = articleCommentQueryDTO.getCurrent();
+        int size = articleCommentQueryDTO.getSize();
+        ThrowUtils.throwIf(size <= 0 || size > 20 || current < 1, ErrorCode.PARAMS_ERROR, "分页参数不合法");
+    }
+
+    private Page<ArticleCommentDO> queryFirstLevelComments(ArticleCommentQueryDTO articleCommentQueryDTO) {
+        LambdaQueryWrapper<ArticleCommentDO> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ArticleCommentDO::getArticleId, articleCommentQueryDTO.getArticleId())
+                .isNull(ArticleCommentDO::getParentId)
+                .orderByDesc(ArticleCommentDO::getCreateTime);
+
+        return this.page(articleCommentQueryDTO.toMpPage(), queryWrapper);
+    }
+
+    private Map<Long, List<ArticleCommentVO>> querySecondLevelComments(Page<ArticleCommentDO> firstCommentDOPage) {
+        List<Long> firstCommentIds = firstCommentDOPage.getRecords().stream()
+                .map(ArticleCommentDO::getId)
+                .collect(Collectors.toList());
+
+        if (firstCommentIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        LambdaQueryWrapper<ArticleCommentDO> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(ArticleCommentDO::getParentId, firstCommentIds);
+
+        List<ArticleCommentDO> secondCommentList = this.list(queryWrapper);
+
+        return secondCommentList.stream()
+                .map(ArticleCommentVO::obj2vo)
+                .collect(Collectors.groupingBy(
+                        ArticleCommentVO::getParentId,
+                        Collectors.collectingAndThen(
+                                Collectors.toList(),
+                                list -> {
+                                    list.sort(Comparator.comparing(ArticleCommentVO::getCreateTime));
+                                    return list;
+                                })));
+    }
+
+    private Map<Long, UserDO> queryUserInfo(Page<ArticleCommentDO> firstCommentDOPage,
+                                            Map<Long, List<ArticleCommentVO>> secondCommentMap) {
+        // 收集所有需要查询的用户ID
+        Set<Long> userIds = new HashSet<>();
+
+        // 添加一级评论用户ID
+        firstCommentDOPage.getRecords().forEach(comment -> userIds.add(comment.getUserId()));
+
+        // 添加二级评论用户ID和回复用户ID
+        secondCommentMap.values().stream()
+                .flatMap(Collection::stream)
+                .forEach(comment -> {
+                    userIds.add(comment.getUserId());
+                    if (comment.getReplyUserId() != null) {
+                        userIds.add(comment.getReplyUserId());
+                    }
+                });
+
+        if (userIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        // 批量查询用户信息
+        return userMapper.selectByIds(userIds).stream()
+                .collect(Collectors.toMap(
+                        UserDO::getId,
+                        Function.identity(),
+                        (existing, replacement) -> existing));
+    }
+
+    private Page<ArticleCommentVO> buildResultPage(Page<ArticleCommentDO> firstCommentDOPage,
+                                                   Map<Long, List<ArticleCommentVO>> secondCommentMap,
+                                                   Map<Long, UserDO> userMap) {
+        Page<ArticleCommentVO> result = new Page<>();
+        BeanUtil.copyProperties(firstCommentDOPage, result);
+
+        List<ArticleCommentVO> firstCommentVOList = firstCommentDOPage.getRecords().stream()
+                .map(ArticleCommentVO::obj2vo)
+                .collect(Collectors.toList());
+
+        // 填充评论信息
+        firstCommentVOList.forEach(articleCommentVO -> {
+            // 填充一级评论用户信息
+            UserDO userDO = userMap.get(articleCommentVO.getUserId());
+            if (userDO != null) {
+                articleCommentVO.setNickname(userDO.getNickname());
+                articleCommentVO.setAvatar(userDO.getAvatar());
+            }
+
+            // 填充二级评论及用户信息
+            List<ArticleCommentVO> children = secondCommentMap.get(articleCommentVO.getId());
+            articleCommentVO.setChildren(children != null ? children : new ArrayList<>());
+
+            if (children != null) {
+                children.forEach(childComment -> {
+                    // 填充评论者信息
+                    UserDO user = userMap.get(childComment.getUserId());
+                    if (user != null) {
+                        childComment.setNickname(user.getNickname());
+                        childComment.setAvatar(user.getAvatar());
+                    }
+
+                    // 填充回复对象信息
+                    if (childComment.getReplyUserId() != null) {
+                        UserDO replyUser = userMap.get(childComment.getReplyUserId());
+                        if (replyUser != null) {
+                            childComment.setReplyNickname(replyUser.getNickname());
+                        }
+                    }
+                });
+            }
+        });
+
+        result.setRecords(firstCommentVOList);
+        return result;
     }
 
     private void validate(ArticleCommentAddDTO articleCommentAddDTO) {

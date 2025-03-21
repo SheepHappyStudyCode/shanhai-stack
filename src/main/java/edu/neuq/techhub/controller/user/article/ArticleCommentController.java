@@ -17,16 +17,21 @@
 
 package edu.neuq.techhub.controller.user.article;
 
+import cn.dev33.satoken.annotation.SaIgnore;
 import cn.dev33.satoken.stp.StpUtil;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import edu.neuq.techhub.common.BaseResponse;
 import edu.neuq.techhub.common.ResultUtils;
 import edu.neuq.techhub.domain.dto.article.comment.ArticleCommentAddDTO;
+import edu.neuq.techhub.domain.dto.article.comment.ArticleCommentQueryDTO;
+import edu.neuq.techhub.domain.vo.article.ArticleCommentVO;
 import edu.neuq.techhub.exception.ErrorCode;
 import edu.neuq.techhub.exception.ThrowUtils;
 import edu.neuq.techhub.service.ArticleCommentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -45,6 +50,14 @@ public class ArticleCommentController {
         articleCommentAddDTO.setUserId(StpUtil.getLoginIdAsLong());
         Long id = articleCommentService.createComment(articleCommentAddDTO);
         return ResultUtils.success(id);
+    }
+
+    @GetMapping("/{articleId}/comments")
+    @Operation(summary = "分页获取文章评论")
+    @SaIgnore
+    public BaseResponse<Page<ArticleCommentVO>> listCommentsByPage(@ParameterObject ArticleCommentQueryDTO articleCommentQueryDTO) {
+        Page<ArticleCommentVO> result = articleCommentService.listCommentsByPage(articleCommentQueryDTO);
+        return ResultUtils.success(result);
     }
 
 }
