@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package edu.neuq.techhub.utils;
 
 import cn.hutool.core.io.FileUtil;
@@ -28,7 +45,6 @@ public class IpUtils {
 
     private final static String resource_name = "ip2region.xdb";
 
-
     private static Searcher searcher = null;
 
     static {
@@ -52,15 +68,14 @@ public class IpUtils {
         }
     }
 
-
     /**
      * 获取request
      * @return
      */
-    public static HttpServletRequest getRequest(){
+    public static HttpServletRequest getRequest() {
 
         try {
-            ServletRequestAttributes requestAttributes = (ServletRequestAttributes)RequestContextHolder.getRequestAttributes();
+            ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
             return requestAttributes.getRequest();
         } catch (Exception e) {
             return null;
@@ -71,7 +86,7 @@ public class IpUtils {
      * 获取ip地址
      * @return
      */
-    public static String getIp(){
+    public static String getIp() {
         HttpServletRequest request = getRequest();
         String ipAddress;
         try {
@@ -115,13 +130,13 @@ public class IpUtils {
      * @param ip ip地址
      * @return 解析后的ip地址
      */
-    public static String getCityInfo(String ip)  {
-        //解析ip地址，获取省市区
+    public static String getCityInfo(String ip) {
+        // 解析ip地址，获取省市区
         String s = analyzeIp(ip);
         Map map = JSONUtil.toBean(s, Map.class);
         Integer status = (Integer) map.get("status");
         String address = Constants.UNKNOWN;
-        if(status == 0){
+        if (status == 0) {
             Map result = (Map) map.get("result");
             Map addressInfo = (Map) result.get("ad_info");
             String nation = (String) addressInfo.get("nation");
@@ -137,9 +152,9 @@ public class IpUtils {
      * @param ip ip地址
      * @return 解析后的ip地址信息
      */
-    public static String getIp2region(String ip)  {
+    public static String getIp2region(String ip) {
 
-        if(searcher == null){
+        if (searcher == null) {
             logger.error("Error: DbSearcher is null");
             return null;
         }
@@ -165,7 +180,7 @@ public class IpUtils {
      * @param request 请求
      * @return {@link UserAgent} 访问设备
      */
-    public static UserAgent getUserAgent(HttpServletRequest request){
+    public static UserAgent getUserAgent(HttpServletRequest request) {
         return UserAgent.parseUserAgentString(request.getHeader("User-Agent"));
     }
 
@@ -174,10 +189,10 @@ public class IpUtils {
      *
      * @return 本地IP地址
      */
-    public static String getHostIp(){
-        try{
+    public static String getHostIp() {
+        try {
             return InetAddress.getLocalHost().getHostAddress();
-        }catch (UnknownHostException e){
+        } catch (UnknownHostException e) {
         }
         return localIp;
     }
@@ -187,8 +202,8 @@ public class IpUtils {
      *
      * @return 本地主机名
      */
-    public static String getHostName(){
-        try{
+    public static String getHostName() {
+        try {
             return InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException e) {
         }
@@ -223,7 +238,7 @@ public class IpUtils {
                 result.append(line);
             }
         } catch (Exception e) {
-            logger.error("发送GET请求出现异常！异常信息为:{}",e.getMessage());
+            logger.error("发送GET请求出现异常！异常信息为:{}", e.getMessage());
         }
         // 使用finally块来关闭输入流
         finally {

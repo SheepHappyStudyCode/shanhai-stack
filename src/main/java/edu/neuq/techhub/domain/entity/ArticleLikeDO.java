@@ -17,11 +17,11 @@
 
 package edu.neuq.techhub.domain.entity;
 
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-
-import java.util.Date;
 
 /**
  * 文章点赞表
@@ -30,7 +30,7 @@ import java.util.Date;
 @EqualsAndHashCode(callSuper = true)
 @TableName(value = "sys_article_like")
 @Data
-public class ArticleLikeDO extends BaseDO2{
+public class ArticleLikeDO extends BaseDO2 {
 
     /**
      * ID
