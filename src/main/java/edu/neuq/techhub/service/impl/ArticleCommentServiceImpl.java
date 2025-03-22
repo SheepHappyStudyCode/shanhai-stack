@@ -35,7 +35,6 @@ import edu.neuq.techhub.exception.ThrowUtils;
 import edu.neuq.techhub.mapper.ArticleCommentMapper;
 import edu.neuq.techhub.mapper.ArticleMapper;
 import edu.neuq.techhub.mapper.UserMapper;
-import edu.neuq.techhub.mapper.UserStatsMapper;
 import edu.neuq.techhub.service.ArticleCommentService;
 import edu.neuq.techhub.utils.IpUtils;
 import lombok.RequiredArgsConstructor;
@@ -194,8 +193,6 @@ public class ArticleCommentServiceImpl extends ServiceImpl<ArticleCommentMapper,
                 articleCommentVO.setNickname(userDO.getNickname());
                 articleCommentVO.setAvatar(userDO.getAvatar());
             }
-
-
 
             // 填充二级评论及用户信息
             List<ArticleCommentVO> children = secondCommentMap.get(articleCommentVO.getId());

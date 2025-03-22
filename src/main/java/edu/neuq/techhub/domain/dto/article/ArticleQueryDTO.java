@@ -24,6 +24,7 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class ArticleQueryDTO extends PageRequest {
+
     Long articleId;
 
     /**
