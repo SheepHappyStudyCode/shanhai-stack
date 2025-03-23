@@ -17,13 +17,17 @@
 
 package edu.neuq.techhub.controller.admin.article;
 
+import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import edu.neuq.techhub.common.BaseResponse;
 import edu.neuq.techhub.common.ResultUtils;
+import edu.neuq.techhub.domain.dto.article.ArticleCrawlDTO;
+import edu.neuq.techhub.domain.dto.article.ArticleDraftUpdateDTO;
 import edu.neuq.techhub.domain.dto.article.ArticleQueryDTO;
 import edu.neuq.techhub.domain.entity.ArticleDO;
 import edu.neuq.techhub.domain.vo.article.ArticleDetailVO;
 import edu.neuq.techhub.domain.vo.user.LoginUserVO;
+import edu.neuq.techhub.manager.CrawlManager;
 import edu.neuq.techhub.service.ArticleService;
 import edu.neuq.techhub.utils.UserUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -39,6 +43,7 @@ import org.springframework.web.bind.annotation.*;
 public class ArticleManageController {
 
     private final ArticleService articleService;
+    private final CrawlManager crawlManager;
 
     @Operation(summary = "分页查询文章")
     @GetMapping
@@ -70,6 +75,13 @@ public class ArticleManageController {
         LoginUserVO loginUser = UserUtils.getLoginUser();
         ArticleDetailVO articleDetailVO = articleService.getArticleDetailById(id, loginUser);
         return ResultUtils.success(articleDetailVO);
+    }
+
+    @Operation(summary = "爬取文章")
+    @PostMapping("/crawl")
+    public BaseResponse<ArticleDraftUpdateDTO> listArticleByPage(@RequestBody ArticleCrawlDTO articleCrawlDTO) {
+        ArticleDraftUpdateDTO result = crawlManager.crawlArticle(articleCrawlDTO.getUrl(), StpUtil.getLoginIdAsLong());
+        return ResultUtils.success(result);
     }
 
 }

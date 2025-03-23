@@ -15,36 +15,12 @@
  * limitations under the License.
  */
 
-package edu.neuq.techhub.exception;
+package edu.neuq.techhub.domain.dto.article;
 
-import lombok.Getter;
+import lombok.Data;
 
-@Getter
-public enum ErrorCode {
+@Data
+public class ArticleCrawlDTO {
 
-    SUCCESS(0, "ok"),
-    PARAMS_ERROR(40000, "请求参数错误"),
-    NOT_LOGIN_ERROR(40100, "未登录"),
-    NO_AUTH_ERROR(40101, "无权限"),
-    NOT_FOUND_ERROR(40400, "请求数据不存在"),
-    FORBIDDEN_ERROR(40300, "禁止访问"),
-    SYSTEM_ERROR(50000, "系统内部异常"),
-    OPERATION_ERROR(50001, "操作失败"),
-    CRAWL_ERROR(50002, "爬虫任务失败");
-
-    /**
-     * 状态码
-     */
-    private final int code;
-
-    /**
-     * 信息
-     */
-    private final String message;
-
-    ErrorCode(int code, String message) {
-        this.code = code;
-        this.message = message;
-    }
-
+    private String url;
 }

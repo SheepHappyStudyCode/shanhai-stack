@@ -17,6 +17,7 @@
 
 package edu.neuq.techhub.domain.dto.article;
 
+import lombok.Builder;
 import lombok.Data;
 
 import java.util.List;
@@ -26,6 +27,7 @@ import java.util.List;
  * @TableName sys_article
  */
 @Data
+@Builder
 public class ArticleDraftUpdateDTO {
 
     /**

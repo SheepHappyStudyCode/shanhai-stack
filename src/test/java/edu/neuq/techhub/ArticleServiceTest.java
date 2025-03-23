@@ -15,36 +15,21 @@
  * limitations under the License.
  */
 
-package edu.neuq.techhub.exception;
+package edu.neuq.techhub;
 
-import lombok.Getter;
+import edu.neuq.techhub.service.ArticleService;
+import jakarta.annotation.Resource;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
 
-@Getter
-public enum ErrorCode {
+@SpringBootTest
+public class ArticleServiceTest {
 
-    SUCCESS(0, "ok"),
-    PARAMS_ERROR(40000, "请求参数错误"),
-    NOT_LOGIN_ERROR(40100, "未登录"),
-    NO_AUTH_ERROR(40101, "无权限"),
-    NOT_FOUND_ERROR(40400, "请求数据不存在"),
-    FORBIDDEN_ERROR(40300, "禁止访问"),
-    SYSTEM_ERROR(50000, "系统内部异常"),
-    OPERATION_ERROR(50001, "操作失败"),
-    CRAWL_ERROR(50002, "爬虫任务失败");
+    @Resource
+    private ArticleService articleService;
 
-    /**
-     * 状态码
-     */
-    private final int code;
-
-    /**
-     * 信息
-     */
-    private final String message;
-
-    ErrorCode(int code, String message) {
-        this.code = code;
-        this.message = message;
+    @Test
+    public void testCrawlArticle() {
+        String url = "https://blog.csdn.net/2301_79458918/article/details/145283992";
     }
-
 }
