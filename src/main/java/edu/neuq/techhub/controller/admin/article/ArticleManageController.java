@@ -84,4 +84,12 @@ public class ArticleManageController {
         return ResultUtils.success(result);
     }
 
+    @PostMapping("/publish")
+    @Operation(summary = "发布文章，不需要审核")
+    public BaseResponse<Integer> publishArticle(@RequestBody ArticleDraftUpdateDTO articleDraftUpdateDTO) {
+        LoginUserVO loginUser = UserUtils.getLoginUser();
+        articleService.publishArticle(articleDraftUpdateDTO, loginUser);
+        return ResultUtils.success(0);
+    }
+
 }

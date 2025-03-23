@@ -39,7 +39,7 @@ public interface ArticleService extends IService<ArticleDO> {
 
     void saveDraft(ArticleDraftUpdateDTO articleDraftUpdateDTO, Long userId);
 
-    void publishArticle(ArticleDraftUpdateDTO articleDraftUpdateDTO, Long userId);
+    void publishArticle(ArticleDraftUpdateDTO articleDraftUpdateDTO, LoginUserVO loginUser);
 
     Page<ArticleDO> listArticleByPage(ArticleQueryDTO articleQueryDTO, LoginUserVO loginUserVO);
 

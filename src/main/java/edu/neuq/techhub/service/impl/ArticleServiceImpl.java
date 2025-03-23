@@ -118,15 +118,15 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, ArticleDO>
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void publishArticle(ArticleDraftUpdateDTO articleDraftUpdateDTO, Long userId) {
+    public void publishArticle(ArticleDraftUpdateDTO articleDraftUpdateDTO, LoginUserVO loginUser) {
         // 文章是否存在
         Long articleId = articleDraftUpdateDTO.getId();
         ThrowUtils.throwIf(articleId == null || articleId <= 0, ErrorCode.PARAMS_ERROR);
         ArticleDO originArticle = this.getById(articleId);
         ThrowUtils.throwIf(originArticle == null, ErrorCode.PARAMS_ERROR, "草稿不存在");
-        ThrowUtils.throwIf(!originArticle.getStatus().equals(ArticleStatusEnum.DRAFT.getCode()), ErrorCode.PARAMS_ERROR, "只有处在草稿状态的文章才能上传");
+        ThrowUtils.throwIf(!originArticle.getStatus().equals(ArticleStatusEnum.DRAFT.getCode()), ErrorCode.PARAMS_ERROR, "只有处在草稿状态的文章才能发布");
         // 文章是否由本人创建
-        ThrowUtils.throwIf(!originArticle.getUserId().equals(userId), ErrorCode.NO_AUTH_ERROR);
+        ThrowUtils.throwIf(!originArticle.getUserId().equals(loginUser.getId()), ErrorCode.NO_AUTH_ERROR);
         // 校验文章参数是否合法
         validate(articleDraftUpdateDTO);
         // 保存文章
@@ -134,7 +134,15 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, ArticleDO>
         BeanUtils.copyProperties(articleDraftUpdateDTO, updateArticleDO);
         updateArticleDO.setEditTime(new Date());
         updateArticleDO.setTags(JSONUtil.toJsonStr(articleDraftUpdateDTO.getTagList()));
-        updateArticleDO.setStatus(ArticleStatusEnum.PUBLISHED.getCode());
+        // 根据用户身份判断是否直接过审
+        if (loginUser.getRole().equals(UserRoleEnum.ADMIN.getValue())) {
+            updateArticleDO.setStatus(ArticleStatusEnum.REVIEW_PASSED.getCode());
+            updateArticleDO.setReviewerId(loginUser.getId());
+            updateArticleDO.setReviewTime(new Date());
+            updateArticleDO.setReviewMessage("管理员自动过审");
+        } else {
+            updateArticleDO.setStatus(ArticleStatusEnum.PUBLISHED.getCode());
+        }
         updateArticleDO.setPublishTime(new Date());
         boolean result = this.updateById(updateArticleDO);
         ThrowUtils.throwIf(!result, ErrorCode.SYSTEM_ERROR);

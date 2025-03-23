@@ -65,7 +65,7 @@ public class ArticleController {
     @Operation(summary = "发布文章")
     public BaseResponse<Integer> publishArticle(@RequestBody ArticleDraftUpdateDTO articleDraftUpdateDTO) {
         LoginUserVO loginUser = UserUtils.getLoginUser();
-        articleService.publishArticle(articleDraftUpdateDTO, loginUser.getId());
+        articleService.publishArticle(articleDraftUpdateDTO, loginUser);
         return ResultUtils.success(0);
     }
 
