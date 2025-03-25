@@ -55,8 +55,9 @@ public class RedisUtils {
      */
     public static long rateLimiter(String key, RateType rateType, int rate, int rateInterval) {
         RRateLimiter rateLimiter = CLIENT.getRateLimiter(key);
-        rateLimiter.trySetRate(rateType, rate, Duration.ofSeconds(rateInterval));
-        rateLimiter.expire(Duration.ofSeconds(60));
+        Duration duration = Duration.ofSeconds(rateInterval);
+        rateLimiter.trySetRate(rateType, rate, duration);
+        rateLimiter.expire(duration);
         if (rateLimiter.tryAcquire()) {
             return rateLimiter.availablePermits();
         } else {
