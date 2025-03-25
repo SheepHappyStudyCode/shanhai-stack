@@ -21,11 +21,13 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.redisson.api.*;
 
+import java.sql.Time;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -53,7 +55,8 @@ public class RedisUtils {
      */
     public static long rateLimiter(String key, RateType rateType, int rate, int rateInterval) {
         RRateLimiter rateLimiter = CLIENT.getRateLimiter(key);
-        rateLimiter.trySetRate(rateType, rate, rateInterval, RateIntervalUnit.SECONDS);
+        rateLimiter.trySetRate(rateType, rate, Duration.ofSeconds(rateInterval));
+        rateLimiter.expire(Duration.ofSeconds(60));
         if (rateLimiter.tryAcquire()) {
             return rateLimiter.availablePermits();
         } else {
