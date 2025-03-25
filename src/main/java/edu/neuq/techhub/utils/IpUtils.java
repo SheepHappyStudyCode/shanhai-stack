@@ -18,6 +18,7 @@
 package edu.neuq.techhub.utils;
 
 import cn.hutool.core.io.IoUtil;
+import cn.hutool.extra.servlet.JakartaServletUtil;
 import edu.neuq.techhub.common.Constants;
 import eu.bitwalker.useragentutils.UserAgent;
 import jakarta.servlet.http.HttpServletRequest;
@@ -90,45 +91,7 @@ public class IpUtils {
      * @return IP地址字符串
      */
     public static String getIp(HttpServletRequest request) {
-        if (request == null) {
-            return LOCAL_IP;
-        }
-
-        String ipAddress = null;
-        String[] headers = {
-                "x-forwarded-for",
-                "Proxy-Client-IP",
-                "WL-Proxy-Client-IP",
-                "X-Real-IP"
-        };
-
-        // 尝试从各种header中获取IP
-        for (String header : headers) {
-            ipAddress = request.getHeader(header);
-            if (StringUtils.isNotBlank(ipAddress) && !"unknown".equalsIgnoreCase(ipAddress)) {
-                break;
-            }
-        }
-
-        // 如果没有从header获取到，使用remoteAddr
-        if (StringUtils.isBlank(ipAddress) || "unknown".equalsIgnoreCase(ipAddress)) {
-            ipAddress = request.getRemoteAddr();
-            if (LOCAL_IP.equals(ipAddress)) {
-                // 根据网卡获取本机IP
-                try {
-                    ipAddress = InetAddress.getLocalHost().getHostAddress();
-                } catch (UnknownHostException e) {
-                    logger.warn("Failed to get local host address: {}", e.getMessage());
-                }
-            }
-        }
-
-        // 处理多级代理的情况，取第一个IP
-        if (StringUtils.isNotBlank(ipAddress) && ipAddress.contains(",")) {
-            ipAddress = ipAddress.substring(0, ipAddress.indexOf(","));
-        }
-
-        return "0:0:0:0:0:0:0:1".equals(ipAddress) ? LOCAL_IP : StringUtils.defaultIfBlank(ipAddress, "");
+        return JakartaServletUtil.getClientIP(request);
     }
 
     /**
