@@ -17,6 +17,7 @@
 
 package edu.neuq.techhub.controller.user.article;
 
+import edu.neuq.techhub.aop.ratelimiter.RateLimiter;
 import edu.neuq.techhub.common.BaseResponse;
 import edu.neuq.techhub.common.ResultUtils;
 import edu.neuq.techhub.domain.vo.user.LoginUserVO;
@@ -40,6 +41,7 @@ public class ArticleLikeController {
 
     @Operation(summary = "文章点赞 / 取消点赞")
     @PostMapping("/{id}/like")
+    @RateLimiter(key = "#{T(cn.dev33.satoken.stp.StpUtil).getLoginIdAsString()}", time = 5, count = 5)
     public BaseResponse<Integer> likeArticle(@PathVariable Long id) {
         LoginUserVO loginUser = UserUtils.getLoginUser();
         Integer result = articleLikeService.likeArticle(loginUser.getId(), id);

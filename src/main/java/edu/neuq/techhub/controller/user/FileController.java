@@ -17,6 +17,7 @@
 
 package edu.neuq.techhub.controller.user;
 
+import edu.neuq.techhub.aop.ratelimiter.RateLimiter;
 import edu.neuq.techhub.common.BaseResponse;
 import edu.neuq.techhub.common.ResultUtils;
 import edu.neuq.techhub.domain.enums.ImageTypeEnum;
@@ -46,6 +47,7 @@ public class FileController {
 
     @PostMapping("/upload-image")
     @Operation(summary = "上传图片")
+    @RateLimiter(key = "#{T(cn.dev33.satoken.stp.StpUtil).getLoginIdAsString()}", time = 60, count = 10)
     public BaseResponse<String> uploadImage(MultipartFile file, Integer type) {
         ThrowUtils.throwIf(file == null || type == null, ErrorCode.PARAMS_ERROR);
         String typeStr = Optional.ofNullable(ImageTypeEnum.getEnumByValue(type)).map(ImageTypeEnum::getText).orElseThrow(() -> new BusinessException(ErrorCode.PARAMS_ERROR, "图片类型不合法"));
