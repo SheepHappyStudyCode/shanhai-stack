@@ -15,13 +15,27 @@
  * limitations under the License.
  */
 
-package edu.neuq.techhub.common;
+package edu.neuq.techhub.aop.ratelimiter;
 
-public class Constants {
+/**
+ * 限流类型
+ *
+ * @author ruoyi
+ */
 
-    public static final String UTF8 = "UTF-8";
+public enum LimitType {
+    /**
+     * 默认策略全局限流
+     */
+    DEFAULT,
 
-    public static final String DEFAULT_PASSWORD = "123456";
+    /**
+     * 根据请求者IP进行限流
+     */
+    IP,
 
-    public static final String UNKNOWN = "未知";
+    /**
+     * 实例限流(集群多后端实例)
+     */
+    CLUSTER
 }

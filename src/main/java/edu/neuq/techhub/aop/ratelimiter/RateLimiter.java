@@ -15,37 +15,43 @@
  * limitations under the License.
  */
 
-package edu.neuq.techhub.exception;
+package edu.neuq.techhub.aop.ratelimiter;
 
-import lombok.Getter;
+import java.lang.annotation.*;
 
-@Getter
-public enum ErrorCode {
-
-    SUCCESS(0, "ok"),
-    PARAMS_ERROR(40000, "请求参数错误"),
-    NOT_LOGIN_ERROR(40100, "未登录"),
-    NO_AUTH_ERROR(40101, "无权限"),
-    FORBIDDEN_ERROR(40300, "禁止访问"),
-    NOT_FOUND_ERROR(40400, "请求数据不存在"),
-    RATE_LIMITER_ERROR(42900, "请求过于频繁"),
-    SYSTEM_ERROR(50000, "系统内部异常"),
-    OPERATION_ERROR(50001, "操作失败"),
-    CRAWL_ERROR(50002, "爬虫任务失败");
+/**
+ * 限流注解
+ *
+ * @author Lion Li
+ */
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface RateLimiter {
 
     /**
-     * 状态码
+     * 限流key,支持使用Spring el表达式来动态获取方法上的参数值
+     * 格式类似于  #code.id #{#code}
      */
-    private final int code;
+    String key() default "";
 
     /**
-     * 信息
+     * 限流时间,单位秒
      */
-    private final String message;
+    int time() default 60;
 
-    ErrorCode(int code, String message) {
-        this.code = code;
-        this.message = message;
-    }
+    /**
+     * 限流次数
+     */
+    int count() default 100;
 
+    /**
+     * 限流类型
+     */
+    LimitType limitType() default LimitType.DEFAULT;
+
+    /**
+     * 提示消息
+     */
+    String message() default "请求过于频繁，请稍后重试";
 }

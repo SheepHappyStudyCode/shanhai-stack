@@ -18,6 +18,8 @@
 package edu.neuq.techhub.controller.user;
 
 import cn.dev33.satoken.stp.StpUtil;
+import edu.neuq.techhub.aop.ratelimiter.LimitType;
+import edu.neuq.techhub.aop.ratelimiter.RateLimiter;
 import edu.neuq.techhub.common.BaseResponse;
 import edu.neuq.techhub.common.ResultUtils;
 import edu.neuq.techhub.domain.dto.user.UserLoginDTO;
@@ -55,6 +57,7 @@ public class AuthController {
      */
     @PostMapping("/login/password")
     @Operation(summary = "使用密码登录")
+    @RateLimiter(time = 60, count = 10, limitType = LimitType.IP)
     public BaseResponse<LoginUserVO> loginByPassword(@RequestBody UserLoginDTO userLoginDTO) {
         LoginUserVO loginUserVO = authService.userLoginByPassword(userLoginDTO, false);
         return ResultUtils.success(loginUserVO);

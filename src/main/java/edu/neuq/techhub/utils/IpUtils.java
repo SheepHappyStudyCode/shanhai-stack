@@ -19,7 +19,7 @@ package edu.neuq.techhub.utils;
 
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.extra.servlet.JakartaServletUtil;
-import edu.neuq.techhub.common.Constants;
+import edu.neuq.techhub.constant.GlobalConstant;
 import eu.bitwalker.useragentutils.UserAgent;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
@@ -101,12 +101,12 @@ public class IpUtils {
      */
     public static String getIp2region(String ip) {
         if (StringUtils.isBlank(ip)) {
-            return Constants.UNKNOWN;
+            return GlobalConstant.UNKNOWN;
         }
 
         if (searcher == null) {
             logger.error("IP region searcher is not initialized");
-            return Constants.UNKNOWN;
+            return GlobalConstant.UNKNOWN;
         }
 
         try {
@@ -118,7 +118,7 @@ public class IpUtils {
             logger.error("Failed to search IP {} in region database: {}", ip, e.getMessage());
         }
 
-        return Constants.UNKNOWN;
+        return GlobalConstant.UNKNOWN;
     }
 
     /**
