@@ -22,4 +22,8 @@ public class GlobalConstant {
     public static final String UTF8 = "UTF-8";
 
     public static final String UNKNOWN = "未知";
+
+    public static final String CAPTCHA_CODE_KEY = "global:captcha_codes:";
+
+    public static final int CAPTCHA_EXPIRATION = 2;
 }
