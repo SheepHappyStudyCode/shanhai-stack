@@ -54,6 +54,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -209,7 +210,13 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, ArticleDO>
         validateArticleAccess(articleDO, loginUserVO);
 
         // 构造返回对象
-        return buildArticleDetailVO(articleDO);
+        ArticleDetailVO articleDetailVO = buildArticleDetailVO(articleDO);
+
+        if (loginUserVO != null) {
+            checkArticleLikeAndCollect(articleDetailVO, loginUserVO.getId());
+        }
+        return articleDetailVO;
+
     }
 
     @Override
@@ -328,27 +335,55 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, ArticleDO>
     }
 
     /**
-     * 判断文章是否被点赞或者收藏过
+     * 判断文章是否被点赞或者收藏过（针对ArticleVO）
      * @param articleVO 文章
      * @param userId 用户 id
      */
     public void checkArticleLikeAndCollect(ArticleVO articleVO, Long userId) {
-        Long articleId = articleVO.getId();
+        checkArticleLikeAndCollectInternal(
+                articleVO.getId(),
+                userId,
+                liked -> articleVO.setLiked(liked),
+                collected -> articleVO.setCollected(collected)
+        );
+    }
+
+    /**
+     * 判断文章是否被点赞或者收藏过（针对ArticleDetailVO）
+     * @param articleVO 文章
+     * @param userId 用户 id
+     */
+    public void checkArticleLikeAndCollect(ArticleDetailVO articleVO, Long userId) {
+        checkArticleLikeAndCollectInternal(
+                articleVO.getId(),
+                userId,
+                articleVO::setLiked,
+                articleVO::setCollected
+        );
+    }
+
+    /**
+     * 内部处理逻辑
+     */
+    private void checkArticleLikeAndCollectInternal(Long articleId, Long userId,
+                                                    Consumer<Boolean> likedSetter,
+                                                    Consumer<Boolean> collectedSetter) {
         // 判断是否点赞
         LambdaQueryWrapper<ArticleLikeDO> likeQueryWrapper = new LambdaQueryWrapper<>();
         likeQueryWrapper.eq(ArticleLikeDO::getArticleId, articleId);
         likeQueryWrapper.eq(ArticleLikeDO::getUserId, userId);
         ArticleLikeDO articleLikeDO = articleLikeMapper.selectOne(likeQueryWrapper);
         if (articleLikeDO != null) {
-            articleVO.setLiked(articleLikeDO.getStatus().equals(LikeStatusEnum.LIKE.getCode()));
+            likedSetter.accept(articleLikeDO.getStatus().equals(LikeStatusEnum.LIKE.getCode()));
         }
+
         // 判断是否收藏
         LambdaQueryWrapper<ArticleCollectDO> collectQueryWrapper = new LambdaQueryWrapper<>();
         collectQueryWrapper.eq(ArticleCollectDO::getArticleId, articleId);
         collectQueryWrapper.eq(ArticleCollectDO::getUserId, userId);
         ArticleCollectDO articleCollectDO = articleCollectMapper.selectOne(collectQueryWrapper);
         if (articleCollectDO != null) {
-            articleVO.setCollected(articleCollectDO.getStatus().equals(CollectStatusEnum.COLLECT.getCode()));
+            collectedSetter.accept(articleCollectDO.getStatus().equals(CollectStatusEnum.COLLECT.getCode()));
         }
     }
 

@@ -139,4 +139,10 @@ public class ArticleDetailVO {
     private UserVO userVO;
 
     private String categoryName;
+
+    private boolean isLiked = false;
+
+    private boolean isCollected = false;
+
+
 }

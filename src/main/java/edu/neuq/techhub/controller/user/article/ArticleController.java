@@ -71,13 +71,14 @@ public class ArticleController {
 
     @Operation(summary = "根据 id 查询文章")
     @GetMapping("/{id}")
+    @SaIgnore
     public BaseResponse<ArticleDetailVO> getArticleDetailById(@PathVariable Long id) {
-        LoginUserVO loginUser = UserUtils.getLoginUser();
+        LoginUserVO loginUser = StpUtil.isLogin() ? UserUtils.getLoginUser() : null;
         ArticleDetailVO articleDetailVO = articleService.getArticleDetailById(id, loginUser);
         return ResultUtils.success(articleDetailVO);
     }
 
-    @Operation(summary = "通过游标分页查询文章")
+    @Operation(summary = "搜索文章")
     @PostMapping("/search")
     @SaIgnore
     public BaseResponse<CursorPageResult<ArticleVO, ArticleSearchDTO.ArticleCursor>> listArticleByCursorPage(@RequestBody ArticleSearchDTO articleSearchDTO) {
