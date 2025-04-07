@@ -343,9 +343,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, ArticleDO>
         checkArticleLikeAndCollectInternal(
                 articleVO.getId(),
                 userId,
-                liked -> articleVO.setLiked(liked),
-                collected -> articleVO.setCollected(collected)
-        );
+                articleVO::setLiked,
+                articleVO::setCollected);
     }
 
     /**
@@ -358,8 +357,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, ArticleDO>
                 articleVO.getId(),
                 userId,
                 articleVO::setLiked,
-                articleVO::setCollected
-        );
+                articleVO::setCollected);
     }
 
     /**

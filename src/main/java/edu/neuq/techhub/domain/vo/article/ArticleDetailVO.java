@@ -144,5 +144,4 @@ public class ArticleDetailVO {
 
     private boolean isCollected = false;
 
-
 }
