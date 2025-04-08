@@ -426,14 +426,12 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, ArticleDO>
             ThrowUtils.throwIf(ObjectUtil.hasEmpty(articleId, sortValue), ErrorCode.PARAMS_ERROR, "游标值不能为空");
             if (asc) {
                 // 升序：(sortField > sortValue) OR (sortField = sortValue AND id > articleId)
-                queryWrapper.and(w -> w
-                        .gt(sortField, sortValue)
-                        .or(o -> o.eq(sortField, sortValue).gt("id", articleId)));
+                queryWrapper.ge(sortField, sortValue)
+                        .and(w -> w.gt(sortField, sortValue).or().gt("id", articleId));
             } else {
                 // 降序：(sortField < sortValue) OR (sortField = sortValue AND id < articleId)
-                queryWrapper.and(w -> w
-                        .lt(sortField, sortValue)
-                        .or(o -> o.eq(sortField, sortValue).lt("id", articleId)));
+                queryWrapper.le(sortField, sortValue)
+                        .and(w -> w.lt(sortField, sortValue).or().lt("id", articleId));
             }
         }
 
