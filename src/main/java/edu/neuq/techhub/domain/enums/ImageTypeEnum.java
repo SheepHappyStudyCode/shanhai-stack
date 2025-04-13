@@ -22,8 +22,8 @@ import lombok.Getter;
 @Getter
 public enum ImageTypeEnum {
 
-    AVATAR("头像", 0),
-    ARTICLE("文章", 1);
+    AVATAR("avatar", 0),
+    ARTICLE("article", 1);
 
     private final String text;
 
